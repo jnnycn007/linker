@@ -124,9 +124,9 @@ namespace linker.messenger.tunnel.client
             return excludeIPTransfer.Get();
         }
 
-        public async Task<List<TunnelTransportItemInfo>> GetTunnelTransportMachineIds()
+        public async Task<List<string>> GetTunnelTransportMachineIds()
         {
-            return await tunnelClientStore.TransportMachineIdCount;
+            return await tunnelClientStore.GetTunnelTransportMachineIds().ConfigureAwait(false);
         }
         public async Task<List<TunnelTransportItemInfo>> GetTunnelTransports(string machineid)
         {
