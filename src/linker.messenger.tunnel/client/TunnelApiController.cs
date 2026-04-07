@@ -247,7 +247,7 @@ namespace linker.messenger.tunnel.client
                 else
                 {
                     List<string> ids = await tunnelMessengerAdapter.GetTunnelTransportMachineIds().ConfigureAwait(false);
-                    foreach (string id in ids)
+                    foreach (string id in ids.Where(c=>c != signInClientStore.Id))
                     {
                         info.MachineId = id;
                         await tunnelMessengerAdapter.SetTunnelTransports(info.MachineId, info.Data).ConfigureAwait(false);
