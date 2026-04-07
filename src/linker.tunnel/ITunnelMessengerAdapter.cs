@@ -59,6 +59,8 @@ namespace linker.tunnel
         /// <returns></returns>
         public List<TunnelExIPInfo> GetExcludeIps();
 
+
+        public Task<List<string>> GetTunnelTransportMachineIds();
         /// <summary>
         /// 获取打洞协议列表
         /// </summary>

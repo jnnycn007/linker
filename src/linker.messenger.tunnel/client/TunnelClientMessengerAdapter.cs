@@ -45,6 +45,8 @@ namespace linker.messenger.tunnel.client
         /// <returns></returns>
         public Task<bool> SetPortMap(int privatePort, int publicPort);
 
+
+        public Task<List<string>> GetTunnelTransportMachineIds();
         /// <summary>
         /// 获取打洞协议列表
         /// </summary>
@@ -122,6 +124,10 @@ namespace linker.messenger.tunnel.client
             return excludeIPTransfer.Get();
         }
 
+        public async Task<List<TunnelTransportItemInfo>> GetTunnelTransportMachineIds()
+        {
+            return await tunnelClientStore.TransportMachineIdCount;
+        }
         public async Task<List<TunnelTransportItemInfo>> GetTunnelTransports(string machineid)
         {
             return await tunnelClientStore.GetTunnelTransports(machineid).ConfigureAwait(false);

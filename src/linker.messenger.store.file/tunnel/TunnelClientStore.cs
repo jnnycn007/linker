@@ -64,6 +64,11 @@ namespace linker.messenger.store.file.tunnel
             return await Task.FromResult(true).ConfigureAwait(false);
         }
 
+
+        public async Task<List<string>> GetTunnelTransportMachineIds()
+        {
+            return await Task.FromResult(runningConfig.Data.Tunnel.Transports.Keys.ToList()).ConfigureAwait(false);
+        }
         public async Task<List<TunnelTransportItemInfo>> GetTunnelTransports(string machineId)
         {
             if (runningConfig.Data.Tunnel.Transports.TryGetValue(machineId, out List<TunnelTransportItemInfo> list) && list != null && list.Count > 0)

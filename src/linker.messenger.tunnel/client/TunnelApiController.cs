@@ -244,6 +244,21 @@ namespace linker.messenger.tunnel.client
                 {
                     await tunnelMessengerAdapter.SetTunnelTransports(Helper.GlobalString, info.Data).ConfigureAwait(false);
                 }
+                else
+                {
+                    List<string> ids = await tunnelMessengerAdapter.GetTunnelTransportMachineIds().ConfigureAwait(false);
+                    foreach (string id in ids)
+                    {
+                        info.MachineId = id;
+                        await tunnelMessengerAdapter.SetTunnelTransports(info.MachineId, info.Data).ConfigureAwait(false);
+                        await messengerSender.SendOnly(new MessageRequestWrap
+                        {
+                            Connection = signInClientState.Connection,
+                            MessengerId = (ushort)TunnelMessengerIds.TransportSetForward,
+                            Payload = serializer.Serialize(info)
+                        }).ConfigureAwait(false);
+                    }
+                }
                
                 return true;
             }
