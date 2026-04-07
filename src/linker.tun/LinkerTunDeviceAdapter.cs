@@ -55,7 +55,7 @@ namespace linker.tun
             var hooks = new ILinkerTunPacketHook[] { 
                 lanMap,
                 //lanSrcProxy,
-                lanDstProxy
+                //lanDstProxy
             };
             readHooks = [.. hooks.OrderBy(c => c.ReadLevel)];
             writeHooks = [.. hooks.OrderBy(c => c.WriteLevel)];
