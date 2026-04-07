@@ -1,4 +1,5 @@
 ﻿using linker.libs;
+using linker.libs.extends;
 using linker.messenger.tunnel;
 using linker.messenger.tunnel.client;
 using linker.tunnel.transport;
@@ -17,7 +18,7 @@ namespace linker.messenger.store.file.tunnel
 
         public Action OnChanged { get; set; } = () => { };
 
-        public int TransportMachineIdCount => runningConfig.Data.Tunnel.Transports.Where(c => c.Value != null && c.Value.Count > 0).Count();
+        public int TransportMachineIdCount => runningConfig.Data.Tunnel.Transports.Count(c => c.Value != null && c.Value.Count > 0);
 
         private readonly RunningConfig runningConfig;
 
@@ -49,11 +50,12 @@ namespace linker.messenger.store.file.tunnel
 
             if (machineId == Helper.GlobalString)
             {
-                foreach (var item in runningConfig.Data.Tunnel.Transports)
+                foreach (var item in runningConfig.Data.Tunnel.Transports.Where(c => c.Value.Count > 0))
                 {
                     Rebuild(item.Value, list);
                 }
             }
+
             Rebuild(transportItems, list);
             runningConfig.Data.Tunnel.Transports[machineId] = transportItems;
             runningConfig.Data.Update();
