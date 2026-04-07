@@ -80,7 +80,7 @@ namespace linker.messenger.tuntap
             decenterClientTransfer.AddDecenters(new List<IDecenter> { serviceProvider.GetService<TuntapDecenter>() });
 
             LinkerTunDeviceAdapter linkerTunDeviceAdapter = serviceProvider.GetService<LinkerTunDeviceAdapter>();
-            linkerTunDeviceAdapter.AddHooks(new List<ILinkerTunPacketHook> { serviceProvider.GetService<LinkerTunPacketHookVlsm>() });
+            //linkerTunDeviceAdapter.AddHooks(new List<ILinkerTunPacketHook> { serviceProvider.GetService<LinkerTunPacketHookVlsm>() });
 
             return serviceProvider;
         }
