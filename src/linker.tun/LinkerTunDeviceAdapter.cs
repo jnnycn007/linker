@@ -52,7 +52,11 @@ namespace linker.tun
 
         public LinkerTunDeviceAdapter()
         {
-            var hooks = new ILinkerTunPacketHook[] { lanMap, lanSrcProxy, lanDstProxy };
+            var hooks = new ILinkerTunPacketHook[] { 
+                lanMap,
+                lanSrcProxy,
+                lanDstProxy
+            };
             readHooks = [.. hooks.OrderBy(c => c.ReadLevel)];
             writeHooks = [.. hooks.OrderBy(c => c.WriteLevel)];
         }
@@ -366,7 +370,6 @@ namespace linker.tun
                 return false;
             }
             LinkerTunPacketHookFlags flags = LinkerTunPacketHookFlags.Next | LinkerTunPacketHookFlags.Write;
-
             for (int i = 0; i < writeHooks.Length; i++)
             {
                 (LinkerTunPacketHookFlags addFlags, LinkerTunPacketHookFlags delFlags) = await writeHooks[i].WriteAsync(buffer, dstIp, srcId).ConfigureAwait(false);
@@ -378,7 +381,6 @@ namespace linker.tun
                 }
             }
             ChecksumHelper.ChecksumWithZero(buffer);
-
             return (flags & LinkerTunPacketHookFlags.Write) != LinkerTunPacketHookFlags.Write || linkerTunDevice.Write(buffer);
         }
         private unsafe uint VerifyPacket(ReadOnlyMemory<byte> buffer)

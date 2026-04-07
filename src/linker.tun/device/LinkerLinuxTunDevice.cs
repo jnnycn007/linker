@@ -220,6 +220,7 @@ namespace linker.tun.device
             {
                 CommandHelper.Linux(string.Empty, new string[] {
                     @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j (ACCEPT|MASQUERADE|DROP|REJECT)"" | iptables-restore",
+                    @$"iptables-save | grep -v -E -- ""-o {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
                 });
                 RestartFirewall();
             }

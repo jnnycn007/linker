@@ -438,26 +438,6 @@ namespace linker.nat
             }, 30000);
         }
 
-        struct ConnectionKey
-        {
-            public uint srcAddr;
-            public ushort srcPort;
-            public uint dstAddr;
-            public ushort dstPort;
-        }
-        sealed class ConnectionKeyComparer : IEqualityComparer<ConnectionKey>
-        {
-            public bool Equals(ConnectionKey x, ConnectionKey y)
-            {
-                return (x.srcAddr, x.srcPort, x.dstAddr, x.dstPort) == (y.srcAddr, y.srcPort, y.dstAddr, y.dstPort)
-                    || (x.dstAddr, x.dstPort, x.srcAddr, x.srcPort) == (y.srcAddr, y.srcPort, y.dstAddr, y.dstPort);
-            }
-
-            public int GetHashCode(ConnectionKey obj)
-            {
-                return (int)obj.srcAddr ^ obj.srcPort ^ (int)obj.dstAddr ^ obj.dstPort;
-            }
-        }
         readonly struct SrcKey
         {
             public readonly uint SrcIp;
