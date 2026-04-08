@@ -67,7 +67,6 @@ namespace linker.libs.extends
         {
             socket.ExclusiveAddressUse = !reuse;
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, reuse);
-
         }
         public static void ReuseBind(this Socket socket, IPEndPoint ip)
         {
@@ -85,7 +84,6 @@ namespace linker.libs.extends
             socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, interval);
             //socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveRetryCount, retryCount);
             socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, time);
-
         }
     }
 }

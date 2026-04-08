@@ -68,7 +68,7 @@ namespace linker.tunnel.connection
     /// <summary>
     /// 隧道连接对象
     /// </summary>
-    public interface ITunnelConnection:IDisposable
+    public interface ITunnelConnection
     {
         /// <summary>
         /// 对方id
@@ -196,6 +196,7 @@ namespace linker.tunnel.connection
         /// <param name="userToken">自定义数据，回调带上</param>
         public void BeginReceive(ITunnelConnectionReceiveCallback callback, object userToken);
 
+        public void Dispose();
         public string ToString();
         public bool Equals(ITunnelConnection connection);
     }
