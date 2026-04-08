@@ -143,23 +143,21 @@ namespace linker.tun.device
 
         public void SetMssFix(int value = 0)
         {
+            CommandHelper.Linux(string.Empty, new string[] {
+                @$"iptables-save | grep -v -E -- ""-o {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+                @$"iptables-save | grep -v -E -- ""-i {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+            });
+
             if (value > 1 && value < 1500)
             {
                 string _value = value == 2 ? "--clamp-mss-to-pmtu" : $"--set-mss {value}";
 
                 CommandHelper.Linux(string.Empty, new string[] {
-                    $"iptables -t mangle -A POSTROUTING -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
                     $"iptables -t mangle -A FORWARD -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
+                    $"iptables -t mangle -A FORWARD -i {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
+                    $"iptables -t mangle -A OUTPUT -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
                 });
             }
-            else
-            {
-                CommandHelper.Linux(string.Empty, new string[] {
-                    @$"iptables-save | grep -v -E -- ""-o {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
-                });
-            }
-
-
         }
         public void SetMtu(int value)
         {
