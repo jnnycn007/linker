@@ -517,11 +517,11 @@ namespace linker.tunnel
             }
             if (addr.HasFlag(Addrs.Ipv4) == false)
             {
-                eps = eps.Where(c => c.AddressFamily != AddressFamily.InterNetwork).ToList();
+                eps = eps.Where(c => c.AddressFamily != AddressFamily.InterNetwork && tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false).ToList();
             }
             if (addr.HasFlag(Addrs.Lan) == false)
             {
-                eps = eps.Where(c => tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false).ToList();
+                eps = eps.Where(c => tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false && c.Address.AddressFamily != AddressFamily.InterNetworkV6).ToList();
             }
 
             tunnelTransportInfo.RemoteEndPoints = eps;
