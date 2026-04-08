@@ -146,7 +146,7 @@ namespace linker.tunnel.transport
 
             if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
             {
-                LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {tunnelTransportInfo.RemoteEndPoints.FirstOrDefault()}");
+                LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {string.Join("\r\n", tunnelTransportInfo.RemoteEndPoints.Select(c => c.ToString()))}");
             }
 
             TaskCompletionSource<IPEndPoint> taskCompletionSource = new TaskCompletionSource<IPEndPoint>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -158,7 +158,12 @@ namespace linker.tunnel.transport
             {
                 try
                 {
+                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                    {
+                        LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {ep}");
+                    }
                     remoteUdp.SendTo(authBytes, ep);
+                    await Task.Delay(50).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -172,7 +177,7 @@ namespace linker.tunnel.transport
             try
             {
                 //然后等待对方回复，如果能收到回复，就说明是通了
-                IPEndPoint remoteEP = await taskCompletionSource.WithTimeout(TimeSpan.FromMilliseconds(2000)).ConfigureAwait(false);
+                IPEndPoint remoteEP = await taskCompletionSource.WithTimeout(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
                 return new TunnelConnectionUdp
                 {
                     UdpClient = remoteUdp,
@@ -254,7 +259,7 @@ namespace linker.tunnel.transport
 
                 try
                 {
-                    AddressFamily af = await token.Tcs.WithTimeout(TimeSpan.FromMilliseconds(5000)).ConfigureAwait(false);
+                    AddressFamily af = await token.Tcs.WithTimeout(TimeSpan.FromMilliseconds(30000)).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
@@ -324,6 +329,11 @@ namespace linker.tunnel.transport
             {
                 try
                 {
+                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                    {
+                        LoggerHelper.Instance.Warning($"{Name} ttl to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {ip}");
+                    }
+
                     Socket socket = new Socket(local.AddressFamily, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
                     socket.IPv6Only(local.AddressFamily, false);
                     socket.WindowsUdpBug();

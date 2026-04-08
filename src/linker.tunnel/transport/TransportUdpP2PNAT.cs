@@ -103,7 +103,7 @@ namespace linker.tunnel.transport
         {
             if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
             {
-                LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {tunnelTransportInfo.RemoteEndPoints.FirstOrDefault()}");
+                LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {string.Join("\r\n", tunnelTransportInfo.RemoteEndPoints.Select(c => c.ToString()))}");
             }
 
             using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(1024);
@@ -120,6 +120,11 @@ namespace linker.tunnel.transport
                 using CancellationTokenSource cts1 = new CancellationTokenSource(500);
                 try
                 {
+                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                    {
+                        LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName}");
+                    }
+
                     foreach (var item in tunnelTransportInfo.RemoteEndPoints)
                     {
                         targetSocket.SendTo(authBytes, item);
@@ -132,7 +137,7 @@ namespace linker.tunnel.transport
                         using CancellationTokenSource cts = new CancellationTokenSource(1000);
                         try
                         {
-                            await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP,cts.Token).ConfigureAwait(false);
+                            await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts.Token).ConfigureAwait(false);
                         }
                         catch (Exception)
                         {
