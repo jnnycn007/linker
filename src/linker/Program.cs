@@ -3,6 +3,7 @@ using linker.messenger.entry;
 using linker.messenger.store.file;
 using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Text;
 using System.Text.Json;

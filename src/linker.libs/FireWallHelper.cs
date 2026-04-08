@@ -29,11 +29,12 @@ namespace linker.libs
                 string name = Path.GetFileNameWithoutExtension(fileName);
                 CommandHelper.Windows(string.Empty, new string[] {
                     $"netsh advfirewall firewall delete rule name=\"{name}\"",
+                    $"netsh advfirewall firewall delete rule name=\"{name}.exe\"",
                     $"netsh advfirewall firewall delete rule name=\"{name}-any\"",
                     $"netsh advfirewall firewall delete rule name=\"{name}-tcp\"",
-                    $"netsh advfirewall firewall add rule name=\"{name}-tcp\" dir=in action=allow protocol=tcp program=\"{fileName}\" enable=yes",
                     $"netsh advfirewall firewall delete rule name=\"{name}-udp\"",
-                    $"netsh advfirewall firewall add rule name=\"{name}-udp\" dir=in action=allow protocol=udp program=\"{fileName}\" enable=yes"
+                    $"netsh advfirewall firewall delete rule name=\"{name}-icmp\"",
+                    $"netsh advfirewall firewall add rule name=\"{name}-any\" dir=in action=allow protocol=any program=\"{fileName}\" enable=yes",
                 });
             }
             catch (Exception)
@@ -47,15 +48,15 @@ namespace linker.libs
                 string name = Path.GetFileNameWithoutExtension(fileName);
                 CommandHelper.Windows(string.Empty, new string[] {
                     $"netsh advfirewall firewall delete rule name=\"{name}\"",
+                    $"netsh advfirewall firewall delete rule name=\"{name}.exe\"",
                     $"netsh advfirewall firewall delete rule name=\"{name}-any\"",
                     $"netsh advfirewall firewall delete rule name=\"{name}-tcp\"",
-                    $"netsh advfirewall firewall add rule name=\"{name}-tcp\" dir=in action=allow protocol=tcp program=\"{fileName}\" enable=yes",
                     $"netsh advfirewall firewall delete rule name=\"{name}-udp\"",
-                    $"netsh advfirewall firewall add rule name=\"{name}-udp\" dir=in action=allow protocol=udp program=\"{fileName}\" enable=yes",
                     $"netsh advfirewall firewall delete rule name=\"{name}-icmp\"",
-                    $"netsh advfirewall firewall add rule name=\"{name}-icmp\" dir=in action=allow protocol=icmpv4 localip={ip}/{prefixLength} enable=yes",
+                    $"netsh advfirewall firewall add rule name=\"{name}-any\" dir=in action=allow protocol=any program=\"{fileName}\" enable=yes",
+                    $"netsh advfirewall firewall add rule name=\"{name}-any\" dir=in action=allow protocol=any localip={ip}/{prefixLength} enable=yes",
                 });
-                string[] add = lans.Select(c => $"netsh advfirewall firewall add rule name=\"{name}-icmp\" dir=in action=allow protocol=icmpv4 localip={(IPAddress.Any.Equals(c.mapIp) ? c.ip : c.mapIp)}/{c.prefixLength} enable=yes").ToArray();
+                string[] add = lans.Select(c => $"netsh advfirewall firewall add rule name=\"{name}-any\" dir=in action=allow protocol=any localip={(IPAddress.Any.Equals(c.mapIp) ? c.ip : c.mapIp)}/{c.prefixLength} enable=yes").ToArray();
                 CommandHelper.Windows(string.Empty, add);
             }
             catch (Exception)
