@@ -6,6 +6,7 @@ export default {
     'common.setting': '设置',
     'common.operating': '正在操作',
     'common.tips': '提示',
+    'common.tips.param': '提示: {0}',
     'common.option': '选项',
     'common.access': '无权限',
     'common.relay': '中继',
@@ -283,6 +284,8 @@ export default {
     'status.tunnelSort': '排序',
     'status.tunnelYes': '是',
     'status.tunnelNo': '否',
+    'status.tunnelResetSelf': '重置本机与其它客户端的独立隧道协议配置',
+    'status.tunnelReset': '重置本机与[{0}]的独立隧道协议配置',
 
     'server.relay': '中继',
     'server.relaySecretKey': '中继密钥',

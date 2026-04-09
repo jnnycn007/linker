@@ -65,7 +65,7 @@ import { Delete,Plus,Top,Bottom } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import Sync from '../sync/Index.vue'
 export default {
-    props:['machineId','height'],
+    props:['machineId','machineName','height'],
     components:{Delete,Plus,Top,Bottom,Sync},
     setup(props) {
         const {t} = useI18n();
@@ -75,6 +75,7 @@ export default {
             height:computed(()=>props.height),
             bufferSize:globalData.value.bufferSize,
             machineid:props.machineId || globalData.value.config.Client.Id,
+            machineName:props.machineName || globalData.value.config.Client.Name,
             isSelf:computed(()=>{
                 return state.machineid === globalData.value.config.Client.Id;
             })
@@ -111,7 +112,10 @@ export default {
 
 
         const handleReset = ()=>{
-            ElMessageBox.confirm(t('common.confirm'), t('common.tips'), {
+            const msg = globalData.value.config.Client.Id == state.machineid 
+            ? t('status.tunnelResetSelf') 
+            : t('status.tunnelReset',[state.machineName]);
+            ElMessageBox.confirm(msg, t('common.tips'), {
                 confirmButtonText: t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 type: 'warning',

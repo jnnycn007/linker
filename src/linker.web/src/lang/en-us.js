@@ -6,6 +6,7 @@ export default {
     'common.setting': 'Setting',
     'common.operating': 'In operation',
     'common.tips': 'Tips',
+    'common.tips.param': 'Tips: {0}',
     'common.option': 'Option',
     'common.access': 'No access',
     'common.relay': 'Relay',
@@ -188,6 +189,8 @@ export default {
     'status.tunnelSort': 'Index',
     'status.tunnelYes': 'Y',
     'status.tunnelNo': 'N',
+    'status.tunnelResetSelf': 'Reset the independent tunnel protocol configuration between this machine and other clients.',
+    'status.tunnelReset': 'Reset the independent tunnel protocol configuration between this machine and [{0}]',
 
     'server.relay': 'Relay',
     'server.relaySecretKey': 'Relay SecretKey',
