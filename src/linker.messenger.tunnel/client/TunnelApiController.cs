@@ -240,14 +240,14 @@ namespace linker.messenger.tunnel.client
             TunnelTransportItemSetInfo info = param.Content.DeJson<TunnelTransportItemSetInfo>();
             if (info.MachineId == signInClientStore.Id || string.IsNullOrWhiteSpace(info.MachineId))
             {
-                if(info.Data.Count > 0)
+                if (info.Data.Count > 0)
                 {
                     await tunnelMessengerAdapter.SetTunnelTransports(Helper.GlobalString, info.Data).ConfigureAwait(false);
                 }
                 else
                 {
                     List<string> ids = await tunnelMessengerAdapter.GetTunnelTransportMachineIds().ConfigureAwait(false);
-                    foreach (string id in ids.Where(c=>c != signInClientStore.Id))
+                    foreach (string id in ids.Where(c => c != signInClientStore.Id && c != Helper.GlobalString))
                     {
                         info.MachineId = id;
                         await tunnelMessengerAdapter.SetTunnelTransports(info.MachineId, info.Data).ConfigureAwait(false);
@@ -259,7 +259,7 @@ namespace linker.messenger.tunnel.client
                         }).ConfigureAwait(false);
                     }
                 }
-               
+
                 return true;
             }
             await tunnelMessengerAdapter.SetTunnelTransports(info.MachineId, info.Data).ConfigureAwait(false);

@@ -99,7 +99,7 @@ namespace linker.tunnel.connection
         private async Task ProcessWrite()
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(65535);
-            IPEndPoint ep = new IPEndPoint(IPEndPoint.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0);
+            IPEndPoint ep = new IPEndPoint(UdpClient.DualMode || IPEndPoint.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, 0);
             try
             {
                 while (cts.IsCancellationRequested == false)

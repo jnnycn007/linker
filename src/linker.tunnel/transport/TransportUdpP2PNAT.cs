@@ -117,27 +117,42 @@ namespace linker.tunnel.transport
 
             for (int i = 0; i < 5; i++)
             {
-                using CancellationTokenSource cts1 = new CancellationTokenSource(500);
                 try
                 {
-                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                   
+                    SocketReceiveFromResult result;
+                    try
                     {
-                        LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName}");
+                        foreach (var item in tunnelTransportInfo.RemoteEndPoints.Where(c => c.AddressFamily == AddressFamily.InterNetwork))
+                        {
+                            targetSocket.SendTo(authBytes, item);
+                        }
+                        using CancellationTokenSource cts1 = new CancellationTokenSource(500);
+                        result = await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts1.Token).ConfigureAwait(false);
+                        targetSocket.SendTo(endBytes, result.RemoteEndPoint);
                     }
-
-                    foreach (var item in tunnelTransportInfo.RemoteEndPoints)
+                    catch (Exception)
                     {
-                        targetSocket.SendTo(authBytes, item);
+                        foreach (var item in tunnelTransportInfo.RemoteEndPoints.Where(c => c.AddressFamily == AddressFamily.InterNetworkV6))
+                        {
+                            targetSocket.SendTo(authBytes, item);
+                        }
+                        using CancellationTokenSource cts2 = new CancellationTokenSource(500);
+                        result = await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts2.Token).ConfigureAwait(false);
+                        targetSocket.SendTo(endBytes, result.RemoteEndPoint);
                     }
-                    var result = await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts1.Token).ConfigureAwait(false);
-                    targetSocket.SendTo(authBytes, result.RemoteEndPoint);
+                   
 
                     while (true)
                     {
                         using CancellationTokenSource cts = new CancellationTokenSource(1000);
                         try
                         {
-                            await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts.Token).ConfigureAwait(false);
+                            result = await targetSocket.ReceiveFromAsync(buffer.Memory, tempEP, cts.Token).ConfigureAwait(false);
+                            if(buffer.Memory.Span.Slice(0, result.ReceivedBytes).SequenceEqual(authBytes))
+                            {
+                                targetSocket.SendTo(endBytes, result.RemoteEndPoint);
+                            }
                         }
                         catch (Exception)
                         {

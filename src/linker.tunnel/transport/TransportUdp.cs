@@ -84,9 +84,8 @@ namespace linker.tunnel.transport
             {
                 //反向连接
                 TunnelTransportInfo tunnelTransportInfo1 = tunnelTransportInfo.ToJsonFormat().DeJson<TunnelTransportInfo>();
+                await BindAndTTL(tunnelTransportInfo1).ConfigureAwait(false);
                 _ = BindListen(tunnelTransportInfo1.Local.Local, tunnelTransportInfo1);
-                BindAndTTL(tunnelTransportInfo1);
-                await Task.Delay(1000).ConfigureAwait(false);
                 if (await tunnelMessengerAdapter.SendConnectBegin(tunnelTransportInfo1).ConfigureAwait(false) == false)
                 {
                     return null;
@@ -113,11 +112,8 @@ namespace linker.tunnel.transport
             //他要连我
             if (tunnelTransportInfo.Direction == TunnelDirection.Forward)
             {
-                //我监听连接
+                await BindAndTTL(tunnelTransportInfo);
                 _ = BindListen(tunnelTransportInfo.Local.Local, tunnelTransportInfo);
-                await Task.Delay(50).ConfigureAwait(false);
-                //给它随便发送一些消息，然后他就可以来连我了
-                BindAndTTL(tunnelTransportInfo);
             }
             else
             {
@@ -150,34 +146,32 @@ namespace linker.tunnel.transport
             }
 
             TaskCompletionSource<IPEndPoint> taskCompletionSource = new TaskCompletionSource<IPEndPoint>(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource<IPEndPoint> taskCompletionSourceV6 = new TaskCompletionSource<IPEndPoint>(TaskCreationOptions.RunContinuationsAsynchronously);
             //监听连接
-            Socket remoteUdp = BindListen(tunnelTransportInfo.Local.Local, taskCompletionSource, tunnelTransportInfo.RemoteEndPoints.Select(c => c.Address).ToList());
+            Socket remoteUdp = BindListen(tunnelTransportInfo.Local.Local, [taskCompletionSource, taskCompletionSourceV6], tunnelTransportInfo.RemoteEndPoints.Select(c => c.Address).ToList());
+            IPEndPoint remoteEP = null;
 
-            //给对方发送简单消息
-            foreach (IPEndPoint ep in tunnelTransportInfo.RemoteEndPoints)
+            try
             {
-                try
+                foreach (IPEndPoint ep in tunnelTransportInfo.RemoteEndPoints.Where(c => c.AddressFamily == AddressFamily.InterNetwork))
                 {
-                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                    {
-                        LoggerHelper.Instance.Warning($"{Name} connect to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {ep}");
-                    }
                     remoteUdp.SendTo(authBytes, ep);
-                    await Task.Delay(50).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                remoteEP = await taskCompletionSource.WithTimeout(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                foreach (IPEndPoint ep in tunnelTransportInfo.RemoteEndPoints.Where(c => c.AddressFamily == AddressFamily.InterNetworkV6))
                 {
-                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                    {
-                        LoggerHelper.Instance.Error(ex);
-                    }
+                    remoteUdp.SendTo(authBytes, ep);
                 }
             }
 
             try
             {
                 //然后等待对方回复，如果能收到回复，就说明是通了
-                IPEndPoint remoteEP = await taskCompletionSource.WithTimeout(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
+                remoteEP = await taskCompletionSourceV6.WithTimeout(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
+
                 return new TunnelConnectionUdp
                 {
                     UdpClient = remoteUdp,
@@ -216,7 +210,7 @@ namespace linker.tunnel.transport
         /// <param name="local"></param>
         /// <param name="tcs"></param>
         /// <returns></returns>
-        private Socket BindListen(IPEndPoint local, TaskCompletionSource<IPEndPoint> tcs, List<IPAddress> ips)
+        private Socket BindListen(IPEndPoint local, TaskCompletionSource<IPEndPoint>[] tcss, List<IPAddress> ips)
         {
             local = new IPEndPoint(IPAddress.IPv6Any, local.Port);
             Socket socket = new Socket(local.AddressFamily, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
@@ -227,9 +221,18 @@ namespace linker.tunnel.transport
             TimerHelper.Async(async () =>
             {
                 using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(1024);
-                SocketReceiveFromResult result = await socket.ReceiveFromAsync(buffer.Memory, new IPEndPoint(IPAddress.IPv6Any, 0)).ConfigureAwait(false);
-                await socket.SendToAsync(endBytes, result.RemoteEndPoint).ConfigureAwait(false);
-                tcs.TrySetResult(result.RemoteEndPoint as IPEndPoint);
+                IPEndPoint ep = new IPEndPoint(IPAddress.IPv6Any, 0);
+                SocketReceiveFromResult result = await socket.ReceiveFromAsync(buffer.Memory, ep).ConfigureAwait(false);
+
+                var memory = buffer.Memory.Slice(0, result.ReceivedBytes);
+                if (result.ReceivedBytes == authBytes.Length && memory.Span.SequenceEqual(authBytes))
+                {
+                    await socket.SendToAsync(endBytes, result.RemoteEndPoint).ConfigureAwait(false);
+                    for (int i = 0; i < tcss.Length; i++)
+                    {
+                        tcss[i].TrySetResult(result.RemoteEndPoint as IPEndPoint);
+                    }
+                }
             });
             return socket;
         }
@@ -291,7 +294,9 @@ namespace linker.tunnel.transport
                         token.Tcs.TrySetResult(result.RemoteEndPoint.AddressFamily);
                         break;
                     }
-                    if (result.ReceivedBytes == endBytes.Length && buffer.Memory.Span.Slice(0, result.ReceivedBytes).SequenceEqual(endBytes))
+
+                    var memory = buffer.Memory.Slice(0, result.ReceivedBytes);
+                    if (result.ReceivedBytes == endBytes.Length && memory.Span.SequenceEqual(endBytes))
                     {
                         if (token.Tcs != null && token.Tcs.Task.IsCompleted == false)
                         {
@@ -302,7 +307,7 @@ namespace linker.tunnel.transport
                     }
                     else
                     {
-                        await token.LocalUdp.SendToAsync(buffer.Memory.Slice(0, result.ReceivedBytes), result.RemoteEndPoint).ConfigureAwait(false);
+                        await token.LocalUdp.SendToAsync(memory, result.RemoteEndPoint).ConfigureAwait(false);
                     }
                 }
             }
@@ -322,37 +327,20 @@ namespace linker.tunnel.transport
         /// 随便发送一些消息
         /// </summary>
         /// <param name="tunnelTransportInfo"></param>
-        private void BindAndTTL(TunnelTransportInfo tunnelTransportInfo)
+        private async Task BindAndTTL(TunnelTransportInfo tunnelTransportInfo)
         {
             IPEndPoint local = new IPEndPoint(IPAddress.IPv6Any, tunnelTransportInfo.Local.Local.Port);
+            Socket socket = new Socket(local.AddressFamily, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            socket.IPv6Only(local.AddressFamily, false);
+            socket.WindowsUdpBug();
+            socket.ReuseBind(local);
+            socket.Ttl = (short)(tunnelTransportInfo.Local.RouteLevel);
+
             foreach (var ip in tunnelTransportInfo.RemoteEndPoints)
             {
-                try
-                {
-                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                    {
-                        LoggerHelper.Instance.Warning($"{Name} ttl to {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName} {ip}");
-                    }
-
-                    Socket socket = new Socket(local.AddressFamily, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
-                    socket.IPv6Only(local.AddressFamily, false);
-                    socket.WindowsUdpBug();
-                    socket.ReuseBind(local);
-                    socket.Ttl = (short)(tunnelTransportInfo.Local.RouteLevel);
-                    _ = socket.SendToAsync(authBytes, SocketFlags.None, ip);
-                    socket.SafeClose();
-                }
-                catch (Exception ex)
-                {
-                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                    {
-                        LoggerHelper.Instance.Error(ex);
-                    }
-                }
-                finally
-                {
-                }
+                await socket.SendToAsync(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString().Md5()), SocketFlags.None, ip).ConfigureAwait(false);
             }
+            socket.SafeClose();
         }
 
         private ConcurrentDictionary<string, TaskCompletionSource<ITunnelConnection>> reverseDic = new ConcurrentDictionary<string, TaskCompletionSource<ITunnelConnection>>();
@@ -456,6 +444,4 @@ namespace linker.tunnel.transport
         }
 
     }
-
-
 }

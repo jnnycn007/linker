@@ -187,7 +187,7 @@ namespace linker.tunnel
                 if (exTunnelTypes != null && exTunnelTypes.Length > 0)
                 {
                     query = query.Where(c => exTunnelTypes.Contains(c.TunnelType) == false);
-                   
+
                 }
 
                 foreach (TunnelTransportItemInfo transportItem in query.ToList())
@@ -465,8 +465,8 @@ namespace linker.tunnel
                 eps.AddRange(tunnelTransportInfo.Remote.LocalIps.Where(c => c.AddressFamily == AddressFamily.InterNetwork).SelectMany(c => new List<IPEndPoint>
                 {
                     new IPEndPoint(c, tunnelTransportInfo.Remote.Local.Port),
-                    new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
-                    new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
+                    //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
+                    //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
                 }));
             }
             //在尝试外网
@@ -488,8 +488,8 @@ namespace linker.tunnel
             eps.AddRange(tunnelTransportInfo.Remote.LocalIps.Where(c => c.AddressFamily == AddressFamily.InterNetworkV6).SelectMany(c => new List<IPEndPoint>
             {
                 new IPEndPoint(c, tunnelTransportInfo.Remote.Local.Port),
-                new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
-                new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
+                //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
+                //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
              }));
             //本机有V6
             bool hasV6 = tunnelTransportInfo.Local.LocalIps.Any(c => c.AddressFamily == AddressFamily.InterNetworkV6);
@@ -517,11 +517,11 @@ namespace linker.tunnel
             }
             if (addr.HasFlag(Addrs.Ipv4) == false)
             {
-                eps = eps.Where(c => c.AddressFamily != AddressFamily.InterNetwork && tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false).ToList();
+                eps = eps.Where(c => c.Address.Equals(tunnelTransportInfo.Remote.Remote.Address) == false).ToList();
             }
             if (addr.HasFlag(Addrs.Lan) == false)
             {
-                eps = eps.Where(c => tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false && c.Address.AddressFamily != AddressFamily.InterNetworkV6).ToList();
+                eps = eps.Where(c => tunnelTransportInfo.Remote.LocalIps.Contains(c.Address) == false || c.Address.AddressFamily == AddressFamily.InterNetworkV6).ToList();
             }
 
             tunnelTransportInfo.RemoteEndPoints = eps;
