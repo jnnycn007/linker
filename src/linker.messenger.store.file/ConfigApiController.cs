@@ -329,7 +329,10 @@ namespace linker.messenger.store.file
             try
             {
                 ShareGroupInfo info = crypto.Decode(Convert.FromBase64String(param.Content)).GetString().DeJson<ShareGroupInfo>();
-
+                if (config.Data.Client.Groups.Any(c => c.Id == info.Id && c.Password == info.Pwd))
+                {
+                    return false;
+                }
                 var list = config.Data.Client.Groups.ToList();
                 list.Insert(0, new SignInClientGroupInfo { Id = info.Id, Name = info.Id, Password = info.Pwd });
                 config.Data.Client.Groups = list.ToArray();
