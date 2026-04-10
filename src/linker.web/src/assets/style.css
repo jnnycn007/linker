@@ -54,7 +54,10 @@ a.a-line {
     display: -o-flex;
     flex-wrap: wrap;
 }
-
+.flex-center{
+    align-items: center;
+    justify-content:center;
+}
 .flex-nowrap {
     flex-wrap: nowrap;
 }

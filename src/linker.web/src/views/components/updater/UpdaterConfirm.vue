@@ -1,5 +1,5 @@
 <template>
-    <el-dialog class="options-center" title="更新" destroy-on-close v-model="state.show" width="40rem" top="2vh">
+    <el-dialog class="options-center" title="更新" destroy-on-close v-model="state.show" width="42rem" top="2vh">
         <div class="updater-wrap t-c">
             <AccessBoolean value="UpdateSelf,UpdateOther">
                 <template #default="{values}">

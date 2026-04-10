@@ -25,13 +25,30 @@
             </a>
         </template>
     </AccessBoolean>
+    <el-dialog class="options-center" title="更新" destroy-on-close v-model="state.show" width="42rem" top="2vh">
+        <div class="updater-wrap t-c">
+            <div class="t-l">
+                <ul>
+                    <li v-for="item in state.msg">{{ item }}</li>
+                </ul>
+            </div>
+            <div class="flex mgt-1 flex-center">
+                <el-select v-model="state.versionValue" size="large" class="w-15" filterable allow-create default-first-option>
+                    <el-option :key="updaterServer.Version" :label="updaterServer.Version" :value="updaterServer.Version" />
+                </el-select>
+            </div>
+            <div class="mgt-2 t-c">
+                <el-button type="success" @click="handleConfirm" plain>确 定</el-button>
+            </div>
+        </div>
+    </el-dialog>
 </template>
 <script>
 import { injectGlobalData } from '@/provide';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, reactive, ref } from 'vue';
 import {Promotion,Download,Loading,CircleCheck} from '@element-plus/icons-vue'
-import { confirmServer, exitServer,  getUpdaterServer } from '@/apis/updater';
+import { confirmServer, exitServer,  getUpdaterMsg,  getUpdaterServer } from '@/apis/updater';
 import ServerFlow from '../../flow/Index.vue';
 import { useI18n } from 'vue-i18n';
 export default {
@@ -45,10 +62,11 @@ export default {
 
         const state = reactive({
             show: false,
-            loading: false,
+            msg:[],
 
             connected: computed(() => globalData.value.signin.Connected),
             version: computed(() => globalData.value.signin.Version),
+            versionValue: '',
             timer:0
         });
 
@@ -59,6 +77,7 @@ export default {
                 updaterServer.value.Status = res.Status;
                 updaterServer.value.Length = res.Length;
                 updaterServer.value.Current = res.Current;
+                state.versionValue = res.Version;
                 if(updaterServer.value.Status > 2 && updaterServer.value.Status < 6){
                     state.timer =  setTimeout(()=>{
                         _getUpdaterServer();
@@ -109,35 +128,37 @@ export default {
                 }).catch(() => {});
                 return;
             }
-
+ 
             //已检测
             if(updaterServer.value.Status == 2){
-                ElMessageBox.confirm(t('status.serverConfirm'), t('common.tips'), {
-                    confirmButtonText:  t('common.confirm'),
-                    cancelButtonText: t('common.cancel'),
-                    type: 'warning'
-                }).then(() => {
-                    confirmServer(updaterServer.value.Version || globalData.value.signin.Version).then(()=>{
-                        setTimeout(()=>{
-                            _getUpdaterServer();
-                        },1000);
-                    });
-                }).catch(() => {});
+                state.show = true;
             }
+        }
+        const handleConfirm = ()=>{
+            confirmServer(state.versionValue || updaterServer.value.Version || globalData.value.signin.Version).then(()=>{
+                setTimeout(()=>{
+                    _getUpdaterServer();
+                },1000);
+            });
         }
 
         onMounted(() => {
             _getUpdaterServer();
+            getUpdaterMsg().then((res)=>{
+                state.msg = res.Msg;
+            });
         });
 
         return {
-         config:props.config,  state,updaterServer,handleUpdate,updateText,updateColor
+         config:props.config,  state,updaterServer,handleUpdate,handleConfirm,updateText,updateColor
         }
     }
 }
 </script>
 <style lang="stylus" scoped>
-
+.updater-wrap{
+    line-height:normal;
+}
 @keyframes loading {
     from{transform:rotate(0deg)}
     to{transform:rotate(360deg)}
