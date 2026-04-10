@@ -309,7 +309,6 @@ namespace linker.messenger.store.file
             {
                 return Convert.ToBase64String(crypto.Encode(new ShareGroupInfo
                 {
-                    Server = config.Data.Client.Server.Host,
                     Id = config.Data.Client.Group.Id,
                     Pwd = config.Data.Client.Group.Password
                 }.ToJson().ToBytes()));
@@ -330,9 +329,10 @@ namespace linker.messenger.store.file
             try
             {
                 ShareGroupInfo info = crypto.Decode(Convert.FromBase64String(param.Content)).GetString().DeJson<ShareGroupInfo>();
-                config.Data.Client.Server.Host = info.Server;
-                config.Data.Client.Group.Id = info.Id;
-                config.Data.Client.Group.Password = info.Pwd;
+
+                var list = config.Data.Client.Groups.ToList();
+                list.Insert(0, new SignInClientGroupInfo { Id = info.Id, Name = info.Id, Password = info.Pwd });
+                config.Data.Client.Groups = list.ToArray();
                 config.Data.Update();
 
                 signInClientTransfer.ReSignIn();
@@ -343,7 +343,7 @@ namespace linker.messenger.store.file
             }
             finally
             {
-                crypto.Dispose(); 
+                crypto.Dispose();
             }
 
             return false;

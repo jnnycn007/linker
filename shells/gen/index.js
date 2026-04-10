@@ -88,29 +88,29 @@ function writeUpload(data, tagName) {
         };
     }
     data.jobs.build.steps.push({
-        name: `upload-any-oss`,
-        id: `upload-any-oss`,
+        name: `upload-anywhere-oss`,
+        id: `upload-anywhere-oss`,
         uses: 'tvrcgo/oss-action@v0.1.1',
         with: {
             'region': 'oss-cn-shenzhen',
             'key-id': '${{ secrets.ALIYUN_OSS_ID }}',
             'key-secret': '${{ secrets.ALIYUN_OSS_SECRET }}',
             'bucket': 'ide-qbcode',
-            'asset-path': `./public/publish-zip/linker-any.zip`,
-            'target-path': `/downloads/linker/${tagName}/linker-any.zip`
+            'asset-path': `./public/publish-zip/linker-anywhere.zip`,
+            'target-path': `/downloads/linker/${tagName}/linker-anywhere.zip`
         }
     });
     data.jobs.build.steps.push({
-        name: `upload-any`,
-        id: `upload-any`,
+        name: `upload-anywhere`,
+        id: `upload-anywhere`,
         uses: 'actions/upload-release-asset@master',
         env: {
             'GITHUB_TOKEN': '${{ secrets.ACTIONS_TOKEN }}'
         },
         with: {
             'upload_url': '${{ steps.create_release.outputs.upload_url }}',
-            'asset_path': `./public/publish-zip/linker-any.zip`,
-            'asset_name': `linker-any.zip`,
+            'asset_path': `./public/publish-zip/linker-anywhere.zip`,
+            'asset_name': `linker-anywhere.zip`,
             'asset_content_type': 'application/zip'
         }
     });

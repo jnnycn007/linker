@@ -14,7 +14,6 @@ namespace linker
     {
         static async Task Main(string[] args)
         {
-
             ServicePointManager.CheckCertificateRevocationList = false;
 #if DEBUG
 #else
@@ -39,8 +38,7 @@ namespace linker
             //ThreadPool.SetMinThreads(1024, 1024);
             //ThreadPool.SetMaxThreads(65535, 65535);
 
-            string serviceDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            Directory.SetCurrentDirectory(serviceDirectory);
+            Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 
             //windows服务运行
             if (Environment.UserInteractive == false && OperatingSystem.IsWindows())

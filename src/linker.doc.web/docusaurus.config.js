@@ -9,7 +9,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
     title: 'linker-doc',
-    tagline: 'linker、海内皆隔壁，天涯若比邻。',
+    tagline: '自由哒。',
     favicon: 'img/favicon.ico',
 
     // Set the production url of your site here
@@ -85,7 +85,7 @@ const config = {
             },
             announcementBar: {
                 id: 'support_us',
-                content: '<span style="font-size:14px;color:#f7033a;">使用官方信标服务器时，在<a target="_blank" href="https://ifdian.net/a/snltty">【🔋爱发电】</a>充电后的订单号可在[服务器][中继]部分导入，以解锁相应中继带宽，自建不需要</span>',
+                content: '<span style="font-size:14px;color:#f7033a;">使用官方信标服务器时，在<a target="_blank" href="https://ifdian.net/a/snltty">【🔋爱发电】</a>充电后的订单号可在[服务器][中继]部分导入，以解锁>3mbps的中继带宽。</span>',
                 backgroundColor: '#f5f5f5',
                 textColor: '#ff0000',
                 isCloseable: false,

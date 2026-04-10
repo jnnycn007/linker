@@ -48,7 +48,7 @@ export default function Home() {
     return (
         <Layout
             title={`${siteConfig.title}`}
-            description="linker、海内皆隔壁，天涯若比邻。">
+            description="自由哒。">
             <HomepageHeader />
             <main>
                 <HomepageFeatures />

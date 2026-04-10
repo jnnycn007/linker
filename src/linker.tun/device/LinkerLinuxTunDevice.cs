@@ -189,6 +189,7 @@ namespace linker.tun.device
 
                 string str = CommandHelper.Linux(string.Empty, new string[] {
                     $"sysctl -w net.ipv4.ip_forward=1",
+                    $"sysctl -w net.ipv4.conf.{Name}.forwarding=1",
 
                     $"iptables -A FORWARD -i {interfaceLinux} -o {Name} -j ACCEPT",
                     $"iptables -A FORWARD -i {Name} -j ACCEPT",
