@@ -1,8 +1,15 @@
-import { getSignInList, setSignInOrder } from "@/apis/signin";
+import { getSignInList } from "@/apis/signin";
 import { injectGlobalData } from "@/provide";
 import { computed, inject, nextTick, provide, reactive, ref } from "vue";
 
 const deviceSymbol = Symbol();
+let pageCache = {
+    List: [],
+    Request:{
+        Page: 1, Size: 255, Name: '', Ids: [], Prop: '', Asc: true
+    },
+    Count:0
+};
 export const provideDevices = () => {
     //https://api.ipbase.com/v1/json/8.8.8.8
     const globalData = injectGlobalData();
@@ -13,7 +20,8 @@ export const provideDevices = () => {
     const count = +(localStorage.getItem('device-count') || '255');
     const prop = localStorage.getItem('prop') || '';
     const asc =  (localStorage.getItem('asc') || 'false') == 'true';
-    const name = localStorage.getItem('search-name') || ''
+    const name = localStorage.getItem('search-name') || '';
+    
     const devices = reactive({
         timer: 0,
         timer1: 0,
@@ -71,15 +79,15 @@ export const provideDevices = () => {
                         const json = {_index:i};
                         for(let j = 0; j < changeds.length; j++) {
                             const hook = changeds[j];
-                            hook.processFn(devices.page.List[i],json);
+                            hook.processFn(device,json);
                         }
-                        Object.assign(devices.page.List[i], json);
+                        Object.assign(device, json);
                     }
                 }
+                handleSort();
             }
             
             await Promise.all(Object.values(hooks).map(hook=>dataFn(hook)));
-
             devices.timer1 = setTimeout(fn,1000);
         }
         fn();
@@ -92,9 +100,21 @@ export const provideDevices = () => {
             _getSignList1();
         });
     }
+
+    const _getCacheOrRemote = ()=>{
+        return new Promise((resolve, reject) => { 
+            if(pageCache.List && pageCache.List.length > 0){
+                resolve(pageCache);
+            }else{
+                getSignInList(devices.page.Request).then((res)=>{
+                    resolve(res);
+                }).catch(()=>{});
+            }
+        });
+    }
     const _getSignList = () => {
         return new Promise((resolve, reject) => { 
-            getSignInList(devices.page.Request).then((res) => {
+            _getCacheOrRemote().then((res) => {
                 
                 if(!hasFullList.value)
                 {
@@ -138,7 +158,7 @@ export const provideDevices = () => {
                 for(let name in hooks) {
                     hooks[name].changed = true;
                 }
-                handleSort();
+                
                 localStorage.setItem('device-count',devices.page.Count);
                 nextTick(()=>{
                     window.dispatchEvent(new Event('resize'));
@@ -200,27 +220,31 @@ export const provideDevices = () => {
     const handleSort = ()=>{
         const prop = devices.page.Request.Prop;
         const asc = devices.page.Request.Asc;
+        let list = devices.page.List;
         switch(prop){
             case 'machineName':
-                devices.page.List = asc 
-                ? devices.page.List.sort((a,b)=> a.MachineName.localeCompare(b.MachineName))
-                : devices.page.List.sort((a,b)=> b.MachineName.localeCompare(a.MachineName));
+                list = asc 
+                ? list.sort((a,b)=> a.MachineName.localeCompare(b.MachineName))
+                : list.sort((a,b)=> b.MachineName.localeCompare(a.MachineName));
             break;
             case 'tunnel':
-                devices.page.List = asc 
-                ? devices.page.List.sort((a,b)=> a.hook_tunnel.Net.nat_number - b.hook_tunnel.Net.nat_number )
-                : devices.page.List.sort((a,b)=> b.hook_tunnel.Net.nat_number - a.hook_tunnel.Net.nat_number);
+                list = asc 
+                ? list.sort((a,b)=> a.hook_tunnel_sort - b.hook_tunnel_sort )
+                : list.sort((a,b)=> b.hook_tunnel_sort - a.hook_tunnel_sort);
             break;
             case 'tuntap':
-                devices.page.List = asc
-                ? devices.page.List.sort((a,b)=> a.hook_tuntap.IP.localeCompare(b.hook_tuntap.IP))
-                : devices.page.List.sort((a,b)=> b.hook_tuntap.IP.localeCompare(a.hook_tuntap.IP));            
+                list = asc
+                ? list.sort((a,b)=> a.hook_tuntap_sort.localeCompare(b.hook_tuntap_sort))
+                : list.sort((a,b)=> b.hook_tuntap_sort.localeCompare(a.hook_tuntap_sort));            
             break;
             default:
-                devices.page.List =  devices.page.List.sort((a,b)=> b.Connected - a.Connected);       
+                   
             break;
 
         }
+        list =  list.sort((a,b)=> b.Connected - a.Connected);    
+        devices.page.List = list;
+        pageCache = devices.page;
     }
     const setSort = () => {
         localStorage.setItem('prop',devices.page.Request.Prop);

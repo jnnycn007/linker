@@ -81,8 +81,9 @@ export const provideTunnel = () => {
     const tunnelProcessFn = (device,json) => { 
         if(!tunnel.value.list || !tunnel.value.operatings) return;
         
+        const value = tunnel.value.list[device.MachineId];
         Object.assign(json,{
-            hook_tunnel: tunnel.value.list[device.MachineId],
+            hook_tunnel: value,
             hook_tunnel_load:true,
             hook_operating: tunnel.value.operatings[device.MachineId],
             hook_operating_load: true,
@@ -92,7 +93,11 @@ export const provideTunnel = () => {
             const arr1 = arr[0].split('/');
             json.hook_tunnel.Net.nat_number = parseInt(arr[1] || '0');
             json.hook_tunnel.Net.nat_text = `RFC 5780\n映射类型 : ${arr1[0] || 'Unknown'}\n过滤类型 : ${arr1[1] || 'Unknown'}\n地址类型 : ${arr1[2]}\n成功几率 : ${json.hook_tunnel.Net.nat_number}%`;
+            json.hook_tunnel_sort = json.hook_tunnel.Net.nat_number;
+        }else{
+            json.hook_tunnel_sort = 1000;
         }
+        
     }
     
     const sortTunnel = (asc) => {

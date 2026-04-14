@@ -61,10 +61,19 @@ export const provideTuntap = () => {
     const tuntapRefreshFn = () => {
         refreshTuntap();
     }
+    const padLeft = (numStr) => {
+        if(numStr.length == 3) return numStr;
+        if(numStr.length == 1) return `00${numStr}`;
+        if(numStr.length == 2) return `0${numStr}`;
+        return numStr;
+    }
     const tuntapProcessFn = (device,json) => { 
         if(! tuntap.value.list) return;
+
+        const value = tuntap.value.list[device.MachineId];
         Object.assign(json,{
-            hook_tuntap: tuntap.value.list[device.MachineId],
+            hook_tuntap:  value,
+            hook_tuntap_sort: (value || {IP:'255.255.255.255'}).IP.split('.').map(c=>padLeft(c)).join('.'),
             hook_tuntap_load:true
         });
     }
