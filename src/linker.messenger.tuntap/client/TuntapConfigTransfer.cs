@@ -17,7 +17,7 @@ namespace linker.messenger.tuntap.client
             ? networkInfo.Name
             : "linker";
         public int Mtu => Info.Mtu > 0 ? Info.Mtu : networkInfo.Mtu > 0 ? networkInfo.Mtu : 1420;
-        public int MssFix => Info.MssFix > 0 ? Info.MssFix : networkInfo.MssFix > 0 ? networkInfo.MssFix : 0;
+        public int MssFix => Info.MssFix > 5 ? Info.MssFix : networkInfo.MssFix > 5 ? networkInfo.MssFix : 0;
         public TuntapVlsmStatus VlsmStatus => Info.VlsmStatus == TuntapVlsmStatus.None ? networkInfo.VlsmStatus : Info.VlsmStatus;
         public byte PrefixLength => networkInfo.IP.Equals(IPAddress.Any) ? Info.PrefixLength : networkInfo.PrefixLength;
 

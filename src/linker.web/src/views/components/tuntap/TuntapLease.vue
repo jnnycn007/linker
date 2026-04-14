@@ -188,8 +188,14 @@ export default {
                 {value:1200,label:'使用1200'}
             ],
             msss:[
-                {value:1,label:'不启用'},
-                {value:2,label:'自动计算'},
+                {value:0,label:''},
+                {value:1,label:''},
+                {value:2,label:''},
+                {value:3,label:''},
+                {value:4,label:''},
+                {value:5,label:''},
+                {value:6,label:'不启用'},
+                {value:7,label:'自动计算'},
                 {value:1400,label:'启用1400'},
                 {value:1380,label:'启用1380'},
                 {value:1360,label:'启用1360'},

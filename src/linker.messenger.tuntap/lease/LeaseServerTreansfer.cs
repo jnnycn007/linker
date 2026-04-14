@@ -356,7 +356,7 @@ namespace linker.messenger.tuntap.lease
 
         public int Mtu { get; set; } = 1420;
 
-        public int MssFix { get; set; } = 2;
+        public int MssFix { get; set; }
 
         public TuntapVlsmStatus VlsmStatus { get; set; } = TuntapVlsmStatus.OneWay;
     }

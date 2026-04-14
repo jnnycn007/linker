@@ -9,14 +9,17 @@ export const provideDevices = () => {
     const machineId = computed(() => globalData.value.config.Client.Id);
     const hasFullList = computed(() => globalData.value.hasAccess('FullList'));
 
-    const ps = +(localStorage.getItem('ps') || '10');
-    const count = +(localStorage.getItem('device-count') || '10');
+    const ps = +(localStorage.getItem('ps') || '255');
+    const count = +(localStorage.getItem('device-count') || '255');
+    const prop = localStorage.getItem('prop') || '';
+    const asc =  (localStorage.getItem('asc') || 'false') == 'true';
+    const name = localStorage.getItem('search-name') || ''
     const devices = reactive({
         timer: 0,
         timer1: 0,
         page: {
             Request: {
-                Page: 1, Size: ps, Name: '', Ids: [], Prop: '', Asc: true
+                Page: 1, Size: ps, Name: name, Ids: [], Prop: prop, Asc: asc
             },
             Count: count,
             List: Array(count).fill().map(c=>{ return {}})
@@ -135,7 +138,7 @@ export const provideDevices = () => {
                 for(let name in hooks) {
                     hooks[name].changed = true;
                 }
-
+                handleSort();
                 localStorage.setItem('device-count',devices.page.Count);
                 nextTick(()=>{
                     window.dispatchEvent(new Event('resize'));
@@ -165,6 +168,7 @@ export const provideDevices = () => {
                     }
                 }
             }
+            handleSort();
             devices.timer = setTimeout(_getSignList1, 5000);
         }).catch((err) => {
             devices.timer = setTimeout(_getSignList1, 5000);
@@ -174,6 +178,7 @@ export const provideDevices = () => {
         if (page) {
             devices.page.Request.Page = page;
         }
+        localStorage.setItem('search-name',devices.page.Request.Name || '');
         clearTimeout(devices.loadTimer);
         devices.loadTimer = setTimeout(_getSignList,300);
     }
@@ -192,8 +197,35 @@ export const provideDevices = () => {
         devices.timer1 = 0;
     }
 
-    const setSort = (ids) => {
-        return setSignInOrder(ids);
+    const handleSort = ()=>{
+        const prop = devices.page.Request.Prop;
+        const asc = devices.page.Request.Asc;
+        switch(prop){
+            case 'machineName':
+                devices.page.List = asc 
+                ? devices.page.List.sort((a,b)=> a.MachineName.localeCompare(b.MachineName))
+                : devices.page.List.sort((a,b)=> b.MachineName.localeCompare(a.MachineName));
+            break;
+            case 'tunnel':
+                devices.page.List = asc 
+                ? devices.page.List.sort((a,b)=> a.hook_tunnel.Net.nat_number - b.hook_tunnel.Net.nat_number )
+                : devices.page.List.sort((a,b)=> b.hook_tunnel.Net.nat_number - a.hook_tunnel.Net.nat_number);
+            break;
+            case 'tuntap':
+                devices.page.List = asc
+                ? devices.page.List.sort((a,b)=> a.hook_tuntap.IP.localeCompare(b.hook_tuntap.IP))
+                : devices.page.List.sort((a,b)=> b.hook_tuntap.IP.localeCompare(a.hook_tuntap.IP));            
+            break;
+            default:
+                devices.page.List =  devices.page.List.sort((a,b)=> b.Connected - a.Connected);       
+            break;
+
+        }
+    }
+    const setSort = () => {
+        localStorage.setItem('prop',devices.page.Request.Prop);
+        localStorage.setItem('asc',devices.page.Request.Asc);
+        handleSort();
     }
 
     return {

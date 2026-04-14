@@ -3,7 +3,7 @@
     <template #header>
         <div class="flex">
             <span>{{$t('home.device')}}</span>
-            <span class="flex-1"> <el-input v-trim size="small" v-model="name" clearable @input="handleRefresh" class="w-100" ></el-input> </span>
+            <span class="flex-1"> <el-input v-trim size="small" v-model="devices.page.Request.Name" clearable @input="handleRefresh" class="w-100" ></el-input> </span>
         </div>
     </template>
     <template #default="scope">
@@ -62,6 +62,7 @@ import UpdaterBtn from '../updater/UpdaterBtn.vue';
 import DeviceName from './DeviceName.vue';
 import SystemInfo from '../tuntap/SystemInfo.vue'; 
 import WlistShow from '../wlist/Device.vue'
+import { useDevice } from './devices';
 
 
 
@@ -70,15 +71,14 @@ export default {
     components:{Search,UserFilled,UpdaterBtn,DeviceName,SystemInfo,WlistShow},
     setup(props,{emit}) {
 
-        const name = ref(sessionStorage.getItem('search-name') || '');
-        
+        const devices = useDevice();
+
         const handleRefresh = ()=>{
-            sessionStorage.setItem('search-name',name.value);
-            emit('refresh',name.value)
+            emit('refresh')
         }
 
         return {
-            name, handleRefresh
+            devices, handleRefresh
         }
     }
 }

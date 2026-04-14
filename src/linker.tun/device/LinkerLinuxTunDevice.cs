@@ -148,9 +148,9 @@ namespace linker.tun.device
                 @$"iptables-save | grep -v -E -- ""-i {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
             });
 
-            if (value > 1 && value < 1500)
+            if (value >= 7 && value < 1500)
             {
-                string _value = value == 2 ? "--clamp-mss-to-pmtu" : $"--set-mss {value}";
+                string _value = value == 7 ? "--clamp-mss-to-pmtu" : $"--set-mss {value}";
 
                 CommandHelper.Linux(string.Empty, new string[] {
                     $"iptables -t mangle -A FORWARD -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",

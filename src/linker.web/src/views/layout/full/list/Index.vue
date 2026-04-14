@@ -153,37 +153,16 @@ export default {
         
         
         const handleSortChange = (row)=>{
-
-            devices.page.Request.Prop = row.prop;
-            devices.page.Request.Asc = row.order == 'ascending';
-            
-            let fn = new Promise((resolve,reject)=>{
-                resolve();
-            });
-            if(row.prop == 'tunnel'){   
-                const ids = sortTunnel(devices.page.Request.Asc);
-                if(ids .length > 0){
-                    fn = setSort(ids);
-                }
-            }else if(row.prop == 'tuntap'){
-                const ids = sortTuntapIP(devices.page.Request.Asc);
-                if(ids .length > 0){
-                    fn = setSort(ids);
-                }
-            }else if(row.prop == 'socks5'){
-                const ids = sortSocks5(devices.page.Request.Asc);
-                if(ids .length > 0){
-                    fn = setSort(ids);
-                }
+            if(!row.order){
+                devices.page.Request.Prop = '';
+            }else{
+                devices.page.Request.Prop = row.prop;
+                devices.page.Request.Asc = row.order == 'ascending';
             }
-            fn.then(()=>{
-                handlePageChange();
-            }).catch(()=>{});
-            
+            setSort();
         }
 
-        const handlePageRefresh = (name)=>{
-            devices.page.Request.Name = name || '';
+        const handlePageRefresh = ()=>{
             devices.page.Request.Ids = getTuntapMachines(devices.page.Request.Name)
             .concat(getSocks5Machines(devices.page.Request.Name))
             .reduce((arr,id)=>{
