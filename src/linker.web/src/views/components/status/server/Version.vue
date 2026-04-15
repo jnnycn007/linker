@@ -135,6 +135,7 @@ export default {
             }
         }
         const handleConfirm = ()=>{
+            state.show = false;
             confirmServer(state.versionValue || updaterServer.value.Version || globalData.value.signin.Version).then(()=>{
                 setTimeout(()=>{
                     _getUpdaterServer();

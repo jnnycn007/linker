@@ -30,7 +30,8 @@
                                 </template>
                             </div> 
                             <div class="flex">
-                                <a href="javascript:;" class="a-line" :title="`UPNP、都打勾了就能用
+                                <template v-if="scope.row.hook_counter">
+                                    <a href="javascript:;" class="a-line" :title="`UPNP、都打勾了就能用
 1、公网IP : ${scope.row.hook_counter['upnp-w']}  ${scope.row.hook_counter['upnp-w']>0?'✅':'❌'}
 2、设备数 : ${scope.row.hook_counter['upnp-d']} ${scope.row.hook_counter['upnp-d']>0?'✅':'❌'}
 3、本地映射数 : ${scope.row.hook_counter['upnp-l']} ${scope.row.hook_counter['upnp-l']>0?'✅':'❌'}
@@ -44,7 +45,9 @@
                                             ? '/upnp-green.svg' : (scope.row.hook_counter['upnp-w']> 0 || scope.row.hook_counter['upnp-d'] > 0
                                             ? '/upnp-yellow.svg' : '/upnp.svg')"/>
                                         <span>{{ scope.row.hook_counter['upnp-l'] }}-{{ scope.row.hook_counter['upnp-r'] }}</span>
-                                </a>
+                                    </a>
+                                </template>
+                                
                                 <span class="flex-1"></span>
                                 <a href="javascript:;" class="a-line" 
                                     :class="{yellow:scope.row.hook_tunnel.NeedReboot}" 
