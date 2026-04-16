@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace linker.libs
@@ -10,7 +11,7 @@ namespace linker.libs
         private static readonly Lazy<LoggerHelper> lazy = new Lazy<LoggerHelper>(() => new LoggerHelper());
         public static LoggerHelper Instance => lazy.Value;
 
-        private readonly ConcurrentQueue<LoggerModel> queue = new ConcurrentQueue<LoggerModel>();
+        private readonly Channel<LoggerModel> queue = Channel.CreateUnbounded<LoggerModel>();
         public Action<LoggerModel> OnLogger { get; set; } = (param) => { };
 
         public int PaddingWidth { get; set; } = 50;
@@ -22,18 +23,15 @@ namespace linker.libs
 
         private LoggerHelper()
         {
-            Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(async () =>
             {
                 while (true)
                 {
-                    while (queue.IsEmpty == false)
+                    LoggerModel model = await queue.Reader.ReadAsync().ConfigureAwait(false);
+                    if(model != null)
                     {
-                        if (queue.TryDequeue(out LoggerModel model))
-                        {
-                            OnLogger?.Invoke(model);
-                        }
+                        OnLogger?.Invoke(model);
                     }
-                    Thread.Sleep(15);
                 }
             }, TaskCreationOptions.LongRunning);
         }
@@ -106,7 +104,7 @@ namespace linker.libs
         public void Enqueue(LoggerModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Content)) return;
-            queue.Enqueue(model);
+            queue.Writer.TryWrite(model);
         }
     }
 
