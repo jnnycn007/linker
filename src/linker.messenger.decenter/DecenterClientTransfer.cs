@@ -141,6 +141,7 @@ namespace linker.messenger.decenter
 
             List<DecenterSyncTaskInfo> pullTasks = updates.Select(c =>
             {
+                LoggerHelper.Instance.Debug($"decenter pull {c.Name}:{c.Count}:{c.Force}");
                 return new DecenterSyncTaskInfo
                 {
                     Decenter = c,

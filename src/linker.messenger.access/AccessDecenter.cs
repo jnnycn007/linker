@@ -14,6 +14,7 @@ namespace linker.messenger.access
         public VersionManager DataVersion { get; } = new VersionManager();
 
         public bool Force => Accesss.Count < 2;
+        public int Count => Accesss.Count;
 
         public ConcurrentDictionary<string, BitArray> Accesss { get; } = new ConcurrentDictionary<string, BitArray>();
 

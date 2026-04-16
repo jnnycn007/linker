@@ -6,7 +6,7 @@ const deviceSymbol = Symbol();
 let pageCache = {
     List: [],
     Request:{
-        Page: 1, Size: 255, Name: '', Ids: [], Prop: '', Asc: true
+        Page: 1, Size: 255, Name: '', Ids: [], Asc: true, Prop: ''
     },
     Count:0
 };
@@ -27,7 +27,7 @@ export const provideDevices = () => {
         timer1: 0,
         page: {
             Request: {
-                Page: 1, Size: ps, Name: name, Ids: [], Prop: prop, Asc: asc
+                Page: 1, Size: ps, Name: name, Ids: [], Asc: asc, Prop: prop
             },
             Count: count,
             List: Array(count).fill().map(c=>{ return {}})
@@ -103,7 +103,7 @@ export const provideDevices = () => {
 
     const _getCacheOrRemote = ()=>{
         return new Promise((resolve, reject) => { 
-            if(pageCache.List && pageCache.List.length > 0){
+            if(pageCache.List && pageCache.List.length > 0 && JSON.stringify(devices.page.Request) == JSON.stringify(pageCache.Request)){
                 resolve(pageCache);
             }else{
                 getSignInList(devices.page.Request).then((res)=>{
@@ -244,7 +244,9 @@ export const provideDevices = () => {
         }
         list =  list.sort((a,b)=> b.Connected - a.Connected);    
         devices.page.List = list;
-        pageCache = devices.page;
+        pageCache.Request = JSON.parse(JSON.stringify(devices.page.Request));
+        pageCache.Count = devices.page.Count;
+        pageCache.List = devices.page.List;
     }
     const setSort = () => {
         localStorage.setItem('prop',devices.page.Request.Prop);

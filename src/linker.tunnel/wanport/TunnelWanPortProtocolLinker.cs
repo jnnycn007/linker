@@ -56,7 +56,7 @@ namespace linker.tunnel.wanport
                     UdpClient udpClient = new UdpClient(server.AddressFamily);
                     udpClient.Client.ReuseBind(new IPEndPoint(server.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0));
                     udpClient.Client.WindowsUdpBug();
-                    using CancellationTokenSource cts = new CancellationTokenSource(500);
+                    using CancellationTokenSource cts = new CancellationTokenSource(1000);
                     try
                     {
                         await udpClient.SendAsync(BuildSendData(buffer, i), server).ConfigureAwait(false);

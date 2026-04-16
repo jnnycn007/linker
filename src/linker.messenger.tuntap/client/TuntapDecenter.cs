@@ -13,6 +13,7 @@ namespace linker.messenger.tuntap.client
         public VersionManager PushVersion { get; } = new VersionManager();
         public VersionManager DataVersion { get; } = new VersionManager();
         public bool Force => tuntapInfos.Count < 2;
+        public int Count => tuntapInfos.Count;
 
         private readonly ConcurrentDictionary<string, TuntapInfo> tuntapInfos = new ConcurrentDictionary<string, TuntapInfo>();
         public ConcurrentDictionary<string, TuntapInfo> Infos => tuntapInfos;

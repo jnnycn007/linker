@@ -10,6 +10,7 @@ namespace linker.messenger.tunnel.client
         public VersionManager PushVersion { get; } = new VersionManager();
         public VersionManager DataVersion { get; } = new VersionManager();
         public bool Force => Config.Count < 2;
+        public int Count => Config.Count;
         public ConcurrentDictionary<string, TunnelRouteLevelInfo> Config { get; } = new ConcurrentDictionary<string, TunnelRouteLevelInfo>();
 
         private readonly ITunnelClientStore tunnelClientStore;
