@@ -30,7 +30,6 @@ export default {
     props: ['modelValue','type','data'],
     emits: ['update:modelValue','success'],
     setup(props,{emit}) {
-        console.log(props.data);
         const {t} = useI18n();
         const saveFn = props.type = 'relay' ? relayDenysAdd:sforwardDenysAdd
         const state = reactive({
