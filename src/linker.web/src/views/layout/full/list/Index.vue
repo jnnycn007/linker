@@ -2,7 +2,7 @@
     <div class="home-list-wrap absolute flex flex-column flex-nowrap" >
         <Sort @sort="handleSortChange"></Sort>
         <el-table :data="devices.page.List" stripe border size="small" class="flex-1 w-100">
-            <Device  @refresh="handlePageRefresh"></Device>
+            <Device  @refresh="handlePageRefresh" @search="handleSearchChange"></Device>
             <Tunnel  @refresh="deviceRefreshHook('tunnel')"></Tunnel>
             <Tuntap @refresh="handlePageRefresh"></Tuntap>
             <Socks5  @refresh="deviceRefreshHook('socks5')"></Socks5> 
@@ -124,7 +124,8 @@ export default {
             paperLayout: computed(()=>globalData.value.isPc?'total,sizes,prev,pager, next':'prev, pager, next'),
         });
 
-        const {devices,deviceAddHook,deviceRefreshHook, deviceStartProcess, handlePageChange, handlePageSizeChange,deviceClearTimeout,setSort} = provideDevices();
+        const {devices,deviceAddHook,deviceRefreshHook, deviceStartProcess, handlePageChange,
+             handlePageSizeChange,deviceClearTimeout,handleSort,handleSearch} = provideDevices();
         const {forward} = provideForward();
         const {sforward} = provideSforward();
         const {flow} = provideFlow();
@@ -159,7 +160,10 @@ export default {
                 devices.page.Request.Prop = row.prop;
                 devices.page.Request.Asc = row.order == 'ascending';
             }
-            setSort();
+            handleSort();
+        }
+        const handleSearchChange = ()=>{
+            handleSearch();
         }
 
         const handlePageRefresh = ()=>{
@@ -176,8 +180,6 @@ export default {
 
         onMounted(() => {
             window.dispatchEvent(new Event('resize'));
-            handlePageChange();
-            
             deviceStartProcess();
             updaterSubscribe();
         });
@@ -187,7 +189,7 @@ export default {
         });
 
         return {
-            state,devices,deviceRefreshHook,handleSortChange, handlePageRefresh, handlePageChange,handlePageSizeChange,
+            state,devices,deviceRefreshHook,handleSortChange, handlePageRefresh, handlePageChange,handlePageSizeChange,handleSearchChange,
             tuntap,
             socks5,
             tunnel,connections,

@@ -39,10 +39,10 @@
                                     <p class="flex">
                                         <div>
                                             <template v-if="state.syncData.Key == scope.row.NodeId">
-                                                <el-checkbox size="small" disabled checked>{{ scope.row.Host }}</el-checkbox>
+                                                <el-checkbox size="small" disabled checked>默认</el-checkbox>
                                             </template>
                                             <template v-else>
-                                                <el-checkbox size="small" disabled @click.stop="handleShowSync(scope.row, 1)">{{ scope.row.Host }}</el-checkbox>
+                                                <el-checkbox size="small" disabled @click.stop="handleShowSync(scope.row, 1)">默认</el-checkbox>
                                             </template>
                                         </div>
                                         <span class="flex-1"></span>

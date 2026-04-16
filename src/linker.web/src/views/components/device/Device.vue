@@ -67,14 +67,14 @@ import { useDevice } from './devices';
 
 
 export default {
-    emits:['refresh'],
+    emits:['search'],
     components:{Search,UserFilled,UpdaterBtn,DeviceName,SystemInfo,WlistShow},
     setup(props,{emit}) {
 
         const devices = useDevice();
 
         const handleRefresh = ()=>{
-            emit('refresh')
+            emit('search')
         }
 
         return {
