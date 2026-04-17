@@ -144,19 +144,21 @@ namespace linker.tun.device
         public void SetMssFix(int value = 0)
         {
             CommandHelper.Linux(string.Empty, new string[] {
-                @$"iptables-save | grep -v -E -- ""-o {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
-                @$"iptables-save | grep -v -E -- ""-i {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+                @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+                @$"iptables-save | grep -v -E -- ""-[oi] {interfaceLinux}\s*.*\s* -j TCPMSS"" | iptables-restore",
             });
 
             if (value >= 7 && value < 1500)
             {
                 string _value = value == 7 ? "--clamp-mss-to-pmtu" : $"--set-mss {value}";
-
+                
                 CommandHelper.Linux(string.Empty, new string[] {
-                    $"iptables -t mangle -A FORWARD -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
-                    $"iptables -t mangle -A FORWARD -i {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
-                    $"iptables -t mangle -A OUTPUT -o {Name} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS {_value}",
+                    $"iptables -t mangle -A INPUT -i {Name} -p tcp --syn -j TCPMSS {_value}",
+                    $"iptables -t mangle -A OUTPUT -o {Name} -p tcp --syn -j TCPMSS {_value}",
+                    $"iptables -t mangle -A FORWARD -i {Name} -o {interfaceLinux} -p tcp --syn -j TCPMSS {_value}",
+                    $"iptables -t mangle -A FORWARD -i {interfaceLinux} -o {Name} -p tcp --syn -j TCPMSS {_value}",
                 });
+                
             }
         }
         public void SetMtu(int value)
@@ -219,7 +221,8 @@ namespace linker.tun.device
             {
                 CommandHelper.Linux(string.Empty, new string[] {
                     @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j (ACCEPT|MASQUERADE|DROP|REJECT)"" | iptables-restore",
-                    @$"iptables-save | grep -v -E -- ""-o {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+                    @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
+                    @$"iptables-save | grep -v -E -- ""-[oi] {interfaceLinux}\s*.*\s* -j TCPMSS"" | iptables-restore",
                 });
                 RestartFirewall();
             }
