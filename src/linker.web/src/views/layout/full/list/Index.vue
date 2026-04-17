@@ -175,7 +175,7 @@ export default {
                 }
                 return arr;
             },[]);
-            handlePageChange();
+            handlePageChange(devices.page.Request.Page);
         }
 
         onMounted(() => {
