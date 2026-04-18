@@ -1,82 +1,107 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace linker.libs.timer
 {
     public static class TimerHelper
     {
-        public static void SetTimeout(Action action, int delayMs)
+        public static void SetTimeout(Action action, int delayMs, CancellationToken cts = default)
         {
             Task.Run(async () =>
             {
-                await Task.Delay(delayMs).ConfigureAwait(false);
+                await Task.Delay(delayMs, cts).ConfigureAwait(false);
                 action();
-            });
+            }, cts);
         }
 
-        public static void SetIntervalLong(Action action, int delayMs)
+        public static void SetIntervalLong(Action action, int delayMs, CancellationToken cts = default)
         {
-            Task.Run(async () =>
+            Timer timer = null!;
+            timer = new Timer(_ =>
             {
-                while (true)
+                timer?.Change(Timeout.Infinite, Timeout.Infinite);
+                action();
+                if (cts.IsCancellationRequested)
                 {
-                    action();
-                    await Task.Delay(delayMs).ConfigureAwait(false);
+                    return;
                 }
-            });
+                timer?.Change(delayMs, delayMs);
+            }, null, 0, delayMs);
+            cts.Register(() => timer?.Dispose());
         }
-        public static void SetIntervalLong(Func<bool> action, int delayMs)
+        public static void SetIntervalLong(Func<bool> action, int delayMs, CancellationToken cts = default)
         {
-            Task.Run(async () =>
+            Timer timer = null!;
+            timer = new Timer(_ =>
             {
-                while (action())
+                timer?.Change(Timeout.Infinite, Timeout.Infinite);
+                if (action() == false)
                 {
-                    await Task.Delay(delayMs).ConfigureAwait(false);
+                    timer?.Dispose();
+                    return;
                 }
-            });
+                if (cts.IsCancellationRequested)
+                {
+                    return;
+                }
+                timer?.Change(delayMs, delayMs);
+            }, null, 0, delayMs);
+            cts.Register(() => timer?.Dispose());
         }
-        public static void SetIntervalLong(Func<Task> action, int delayMs)
+        public static void SetIntervalLong(Func<Task> action, int delayMs, CancellationToken cts = default)
         {
-            Task.Run(async () =>
+            Timer timer = null!;
+            timer = new Timer(async _ =>
             {
-                while (true)
+                timer?.Change(Timeout.Infinite, Timeout.Infinite);
+                await action().ConfigureAwait(false);
+                if (cts.IsCancellationRequested)
                 {
-                    await action().ConfigureAwait(false);
-                    await Task.Delay(delayMs).ConfigureAwait(false);
+                    return;
                 }
-            });
+                timer?.Change(delayMs, delayMs);
+            }, null, 0, delayMs);
+            cts.Register(() => timer?.Dispose());
         }
-        public static void SetIntervalLong(Action action, Func<int> delayMs)
+        public static void SetIntervalLong(Action action, Func<int> delayMs, CancellationToken cts = default)
         {
-            Task.Run(async () =>
+            Timer timer = null!;
+            timer = new Timer(async _ =>
             {
-                while (true)
+                timer?.Change(Timeout.Infinite, Timeout.Infinite);
+                action();
+                if (cts.IsCancellationRequested)
                 {
-                    action();
-                    await Task.Delay(delayMs()).ConfigureAwait(false);
+                    return;
                 }
-            });
+                timer?.Change(delayMs(), delayMs());
+            }, null, 0, delayMs());
+            cts.Register(() => timer?.Dispose());
         }
-        public static void SetIntervalLong(Func<Task> action, Func<int> delay)
+        public static void SetIntervalLong(Func<Task> action, Func<int> delayMs, CancellationToken cts = default)
         {
-            Task.Run(async () =>
+            Timer timer = null!;
+            timer = new Timer(async _ =>
             {
-                while (true)
+                timer?.Change(Timeout.Infinite, Timeout.Infinite);
+                await action().ConfigureAwait(false);
+                if (cts.IsCancellationRequested)
                 {
-                    await action().ConfigureAwait(false);
-                    await Task.Delay(delay()).ConfigureAwait(false);
+                    return;
                 }
-            });
+                timer?.Change(delayMs(), delayMs());
+            }, null, 0, delayMs());
+            cts.Register(() => timer?.Dispose());
         }
-       
-        public static void Async(Action action)
+
+        public static void Async(Action action, CancellationToken cts = default)
         {
-            Task.Run(action);
+            Task.Run(action, cts);
         }
-        public static void Async(Func<Task> action)
+        public static void Async(Func<Task> action, CancellationToken cts = default)
         {
-            Task.Run(action);
+            Task.Run(action, cts);
         }
     }
-
 }

@@ -1,11 +1,12 @@
 <template>
    <el-table border height="32px" size="small" @sort-change="handleSortChange" class="table-sort w-100" :default-sort="sort">
         <el-table-column prop="machineName" :label="$t('home.device')" width="98" sortable="custom" ></el-table-column>
-        <el-table-column prop="Version" :label="$t('home.version')" width="98"></el-table-column>
+        <el-table-column prop="version" :label="$t('home.version')" width="98" sortable="custom"></el-table-column>
         <el-table-column prop="tunnel" :label="$t('home.tunnel')" width="94" sortable="custom"></el-table-column>
         <el-table-column prop="tuntap" :label="$t('home.tuntapIP')" width="160" sortable="custom"></el-table-column>
-        <el-table-column prop="socks5" :label="$t('home.proxy')" width="140"></el-table-column>
-        <el-table-column label="..." fixed="right"  min-width="110">
+        <el-table-column prop="socks5" :label="$t('home.proxy')" width="140" sortable="custom"></el-table-column>
+        <el-table-column prop="forward" :label="$t('home.forwardPort')" width="80" sortable="custom"></el-table-column>
+        <el-table-column prop="oper" fixed="right" sortable="custom"  min-width="30">
             <template #header>
             </template>
         </el-table-column>

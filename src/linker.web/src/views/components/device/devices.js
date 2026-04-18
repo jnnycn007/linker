@@ -88,7 +88,7 @@ export const provideDevices = () => {
 
     const deviceStartProcess = () => { 
         _getSignList().then(()=>{
-            startHooks();
+            setTimeout(startHooks,100);
             _getSignList1();
         });
     }
@@ -111,7 +111,7 @@ export const provideDevices = () => {
                         showReboot: item.Connected,
                         isSelf: machineId.value == item.MachineId,
                         avatar: item.Args['avatar'] || '{}',
-                        animationDelay: Math.random()*500,
+                        animationDelay:0,
                     });
                     if (item.isSelf) {
                         globalData.value.self = item;
@@ -208,6 +208,11 @@ export const provideDevices = () => {
                 ? list.sort((a,b)=> a.MachineName.localeCompare(b.MachineName))
                 : list.sort((a,b)=> b.MachineName.localeCompare(a.MachineName));
             break;
+            case 'version':
+                list = asc 
+                ? list.sort((a,b)=> a.Version.localeCompare(b.Version))
+                : list.sort((a,b)=> b.Version.localeCompare(a.Version));
+            break;
             case 'tunnel':
                 try{
                 list = asc 
@@ -222,6 +227,21 @@ export const provideDevices = () => {
                     : list.sort((a,b)=> b.hook_tuntap_sort.localeCompare(a.hook_tuntap_sort));  
                 }catch(e){}          
             break;
+            case 'forward':
+                try{
+                    list = asc
+                    ? list.sort((a,b)=> a.hook_counter_forward_sort.localeCompare(b.hook_counter_forward_sort))
+                    : list.sort((a,b)=> b.hook_counter_forward_sort.localeCompare(a.hook_counter_forward_sort));  
+                }catch(e){}          
+            break;
+            case 'oper':
+                try{
+                    list = asc
+                    ? list.sort((a,b)=> a.hook_counter_oper_sort.localeCompare(b.hook_counter_oper_sort))
+                    : list.sort((a,b)=> b.hook_counter_oper_sort.localeCompare(a.hook_counter_oper_sort));  
+                }catch(e){}          
+            break;
+            
             default:
                    
             break;

@@ -33,6 +33,7 @@ namespace linker.messenger.firewall
         {
             linkerFirewall.BuildRules(firewallClientStore.GetEnabled(signInClientStore.Group.Id).Select(c => (LinkerFirewallRuleInfo)c).ToList());
             linkerFirewall.SetState(firewallClientStore.State);
+            counterDecenter.SetValue("firewall", Count);
         }
 
         public bool State(LinkerFirewallState state)
