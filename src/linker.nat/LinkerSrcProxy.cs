@@ -344,7 +344,10 @@ namespace linker.nat
                 state.ReadPacket.Flags = LinkerSrcProxyFlags.Psh;
                 state.ReadPacket.TotalLength = bytesRead + 40;
                 state.ReadPacket.Length = bytesRead + 44;
-                await callback.Callback(state.ReadPacket).ConfigureAwait(false);
+                if (await callback.Callback(state.ReadPacket).ConfigureAwait(false) == false)
+                {
+                    break;
+                }
 
                 if (state.Sending == false)
                 {
@@ -996,7 +999,7 @@ namespace linker.nat
     }
     public interface ILinkerSrcProxyCallback
     {
-        public Task Callback(LinkerSrcProxyReadPacket packet);
+        public Task<bool> Callback(LinkerSrcProxyReadPacket packet);
         public bool Callback(uint ip);
     }
 }

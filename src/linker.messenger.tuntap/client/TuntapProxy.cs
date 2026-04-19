@@ -101,17 +101,20 @@ namespace linker.messenger.tuntap.client
             await ConnectTunnel(ip).ConfigureAwait(false);
 
         }
-        public async Task InputPacket(LinkerSrcProxyReadPacket packet)
+        public async Task<bool> InputPacket(LinkerSrcProxyReadPacket packet)
         {
             if (tuntapCidrConnectionManager.TryGet(packet.DstAddr, out ITunnelConnection connection) && connection.Connected)
             {
                 if (connection.PacketBuffer.Length > 0)
-                    await connection.SendAsync(packet.Buffer, packet.Offset, packet.Length).ConfigureAwait(false);
-                return;
+                {
+                    return await connection.SendAsync(packet.Buffer, packet.Offset, packet.Length).ConfigureAwait(false);
+                }
             }
-
-            await ConnectTunnel(packet.DstAddr).ConfigureAwait(false);
-
+            else
+            {
+                await ConnectTunnel(packet.DstAddr).ConfigureAwait(false);
+            }
+            return false;
         }
         public bool TestIp(uint ip)
         {
@@ -119,8 +122,10 @@ namespace linker.messenger.tuntap.client
             {
                 return connection.PacketBuffer.Length > 0;
             }
-            _ = ConnectTunnel(ip).ConfigureAwait(false);
-
+            else
+            {
+                _ = ConnectTunnel(ip).ConfigureAwait(false);
+            }
             return false;
         }
 

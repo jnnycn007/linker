@@ -104,9 +104,9 @@ namespace linker.messenger.tuntap.client
         {
             await tuntapProxy.InputPacket(packet).ConfigureAwait(false);
         }
-        public async Task Callback(LinkerSrcProxyReadPacket packet)
+        public async Task<bool> Callback(LinkerSrcProxyReadPacket packet)
         {
-            await tuntapProxy.InputPacket(packet).ConfigureAwait(false);
+            return await tuntapProxy.InputPacket(packet).ConfigureAwait(false);
         }
         public bool Callback(uint ip)
         {

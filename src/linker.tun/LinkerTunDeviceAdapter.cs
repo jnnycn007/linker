@@ -52,7 +52,7 @@ namespace linker.tun
 
         public LinkerTunDeviceAdapter()
         {
-            var hooks = new ILinkerTunPacketHook[] { 
+            var hooks = new ILinkerTunPacketHook[] {
                 lanMap,
                 lanSrcProxy,
                 lanDstProxy
@@ -103,9 +103,9 @@ namespace linker.tun
             return true;
         }
 
-        public async Task Callback(LinkerSrcProxyReadPacket packet)
+        public async Task<bool> Callback(LinkerSrcProxyReadPacket packet)
         {
-            await linkerTunDeviceCallback.Callback(packet);
+            return await linkerTunDeviceCallback.Callback(packet);
         }
         public bool Callback(uint ip)
         {
