@@ -467,19 +467,20 @@ namespace linker.tunnel
                     new IPEndPoint(c, tunnelTransportInfo.Remote.Local.Port),
                 }));
             }
-            //在尝试外网
-            /*
-            eps.AddRange(new List<IPEndPoint>{
-                new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port),
-                new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port+1)
-            });
-            */
+            //再尝试外网ip，UDP的话就多试几个端口
             if (tunnelTransportInfo.TransportType == TunnelProtocolType.Udp)
             {
                 for (int i = tunnelTransportInfo.Remote.Remote.Port - 200; i < tunnelTransportInfo.Remote.Remote.Port + 200; i++)
                 {
                     eps.Add(new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address, i));
                 }
+            }
+            else
+            {
+                eps.AddRange(new List<IPEndPoint>{
+                    new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port),
+                    new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port+1)
+                });
             }
             
 
