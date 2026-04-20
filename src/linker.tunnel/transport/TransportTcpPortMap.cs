@@ -41,6 +41,10 @@ namespace linker.tunnel.transport
 
         public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
 
+        private readonly string authStr = "GET /bilivideo/tcp/index.html HTTP/1.1\r\nHost: upos-sz-mirrorbd.bilivideo.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {0}\r\n\r\n";
+        private readonly string endStr = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nCookie: {0}\r\n\r\nOK";
+        private readonly byte[] cookieBytes = Encoding.UTF8.GetBytes("Cookie: ");
+
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Socket>> distDic = new ConcurrentDictionary<string, TaskCompletionSource<Socket>>();
 
@@ -102,10 +106,10 @@ namespace linker.tunnel.transport
                                 int length = await client.ReceiveAsync(buffer.Memory, cts.Token).ConfigureAwait(false);
                                 if (length > 0)
                                 {
-                                    string key = buffer.Memory.Slice(0, length).GetString();
+                                    string key = GetKey(buffer.Memory.Slice(0, length));
                                     if (distDic.TryRemove(key, out TaskCompletionSource<Socket> tcs))
                                     {
-                                        await client.SendAsync(buffer.Memory.Slice(0, length)).ConfigureAwait(false);
+                                        await client.SendAsync(Encoding.UTF8.GetBytes(string.Format(endStr, key))).ConfigureAwait(false);
                                         tcs.TrySetResult(client);
                                         return;
                                     }
@@ -325,7 +329,9 @@ namespace linker.tunnel.transport
 
                     await targetSocket.ConnectAsync(ep, cts.Token).ConfigureAwait(false);
 
-                    await targetSocket.SendAsync($"{tunnelTransportInfo.Local.MachineId}-{tunnelTransportInfo.FlowId}".ToBytes()).ConfigureAwait(false);
+                    string key = $"{tunnelTransportInfo.Local.MachineId}-{tunnelTransportInfo.FlowId}";
+                    byte[] sendt = Encoding.UTF8.GetBytes(string.Format(authStr, key));
+                    await targetSocket.SendAsync(sendt).ConfigureAwait(false);
                     await targetSocket.ReceiveAsync(buffer.Memory, cts.Token).ConfigureAwait(false);
 
                     //需要ssl
@@ -379,6 +385,19 @@ namespace linker.tunnel.transport
                 LoggerHelper.Instance.Info($"【P2P {Name}】SSL Policy Errors: {sslPolicyErrors}");
             }
             return true;
+        }
+
+        private string GetKey(Memory<byte> memory)
+        {
+            var span = memory.Span;
+            int start = span.IndexOf(cookieBytes);
+            if (start == -1)
+            {
+                return string.Empty;
+            }
+
+            int end = span.Slice(start).IndexOf(Encoding.UTF8.GetBytes("\r\n"));
+            return Encoding.UTF8.GetString(span.Slice(start + cookieBytes.Length, end - cookieBytes.Length));
         }
     }
 }

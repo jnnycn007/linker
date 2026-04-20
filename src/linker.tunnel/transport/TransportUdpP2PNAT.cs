@@ -40,8 +40,8 @@ namespace linker.tunnel.transport
         public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
 
 
-        private readonly byte[] authBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.ttl1");
-        private readonly byte[] endBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.end1");
+        private readonly byte[] authBytes = Encoding.UTF8.GetBytes($"GET /bilivideo/tcp/index.html HTTP/1.1\r\nHost: upos-sz-mirrorbd.bilivideo.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {Helper.GlobalString}.udp.ttl1\r\n\r\n");
+        private readonly byte[] endBytes = Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nCookie: {Helper.GlobalString}.udp.end1\r\n\r\nOK");
 
         private readonly ITunnelMessengerAdapter tunnelMessengerAdapter;
         public TransportUdpP2PNAT(ITunnelMessengerAdapter tunnelMessengerAdapter)

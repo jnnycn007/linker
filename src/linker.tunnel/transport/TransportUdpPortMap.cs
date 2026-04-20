@@ -39,9 +39,10 @@ namespace linker.tunnel.transport
 
         public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
 
-
-        private const string flagTexts = $"{Helper.GlobalString}.udp.portmap.tunnel";
-        private byte[] flagBytes = Encoding.UTF8.GetBytes(flagTexts);
+        private readonly string authStr = "GET /bilivideo/tcp/index.html HTTP/1.1\r\nHost: upos-sz-mirrorbd.bilivideo.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {0}\r\n\r\n";
+        private readonly string endStr = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nCookie: {0}\r\n\r\nOK";
+        private readonly byte[] startBytes = Encoding.UTF8.GetBytes("GET /bilivideo/tcp/index.html");
+        private readonly byte[] cookieBytes = Encoding.UTF8.GetBytes("Cookie: ");
 
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<State>> distDic = new ConcurrentDictionary<string, TaskCompletionSource<State>>();
@@ -107,7 +108,7 @@ namespace linker.tunnel.transport
                         Memory<byte> memory = buffer.AsMemory(0, result.ReceivedBytes);
 
 
-                        if (memory.Length > flagBytes.Length && memory.Span.Slice(0, flagBytes.Length).SequenceEqual(flagBytes))
+                        if (memory.Length > startBytes.Length && memory.Span.Slice(0, startBytes.Length).SequenceEqual(startBytes))
                         {
                             if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
                                 LoggerHelper.Instance.Debug($"{Name} recv from {result.RemoteEndPoint} <{memory.GetString()}>");
@@ -119,11 +120,11 @@ namespace linker.tunnel.transport
                             }
                             else
                             {
-                                string key = memory.GetString();
+                                string key = GetKey(memory);
                                 if (distDic.TryRemove(key, out TaskCompletionSource<State> tcs))
                                 {
                                     connectionsDic.TryAdd(remoteEP, new ConnectionCacheInfo { });
-                                    await socket.SendToAsync(memory, result.RemoteEndPoint).ConfigureAwait(false);
+                                    await socket.SendToAsync(Encoding.UTF8.GetBytes(string.Format(endStr,key)), result.RemoteEndPoint).ConfigureAwait(false);
                                     tcs.TrySetResult(new State { Socket = socket, RemoteEndPoint = remoteEP });
                                 }
                             }
@@ -266,7 +267,7 @@ namespace linker.tunnel.transport
         private async Task<ITunnelConnection> WaitConnect(TunnelTransportInfo tunnelTransportInfo)
         {
             TaskCompletionSource<State> tcs = new TaskCompletionSource<State>(TaskCreationOptions.RunContinuationsAsynchronously);
-            string key = $"{flagTexts}-{tunnelTransportInfo.Remote.MachineId}-{tunnelTransportInfo.FlowId}";
+            string key = $"{tunnelTransportInfo.Remote.MachineId}-{tunnelTransportInfo.FlowId}";
             distDic.TryAdd(key, tcs);
             try
             {
@@ -326,12 +327,14 @@ namespace linker.tunnel.transport
                     targetSocket.IPv6Only(ep.AddressFamily, false);
                     targetSocket.ReuseBind(new IPEndPoint(ep.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, tunnelTransportInfo.Local.Local.Port));
 
-                    byte[] sendt = $"{flagTexts}-{tunnelTransportInfo.Local.MachineId}-{tunnelTransportInfo.FlowId}".ToBytes();
+                    string key = $"{tunnelTransportInfo.Local.MachineId}-{tunnelTransportInfo.FlowId}";
+                    byte[] sendt = Encoding.UTF8.GetBytes(string.Format(authStr, key));
                     await targetSocket.SendToAsync(sendt, ep).ConfigureAwait(false);
 
                     SocketReceiveFromResult recvRestlt = await targetSocket.ReceiveFromAsync(buffer.Memory, new IPEndPoint(ep.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0), cts.Token).ConfigureAwait(false);
 
-                    if (buffer.Memory.Span.Slice(0, recvRestlt.ReceivedBytes).SequenceEqual(sendt) == false)
+                    string _key = GetKey(buffer.Memory.Slice(0, recvRestlt.ReceivedBytes));
+                    if (key != _key)
                     {
                         continue;
                     }
@@ -370,7 +373,18 @@ namespace linker.tunnel.transport
             }
             return null;
         }
+        private string GetKey(Memory<byte> memory)
+        {
+            var span = memory.Span;
+            int start = span.IndexOf(cookieBytes);
+            if (start == -1)
+            {
+                return string.Empty;
+            }
 
+            int end = span.Slice(start).IndexOf(Encoding.UTF8.GetBytes("\r\n"));
+            return Encoding.UTF8.GetString(span.Slice(start + cookieBytes.Length, end - cookieBytes.Length));
+        }
 
         private void CleanTask()
         {

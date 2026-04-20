@@ -109,10 +109,15 @@ namespace linker.messenger.tuntap.client
                 {
                     return await connection.SendAsync(packet.Buffer, packet.Offset, packet.Length).ConfigureAwait(false);
                 }
+                return false;
             }
-            else
+            await ConnectTunnel(packet.DstAddr).ConfigureAwait(false);
+            if (tuntapCidrConnectionManager.TryGet(packet.DstAddr, out connection) && connection.Connected)
             {
-                await ConnectTunnel(packet.DstAddr).ConfigureAwait(false);
+                if (connection.PacketBuffer.Length > 0)
+                {
+                    return await connection.SendAsync(packet.Buffer, packet.Offset, packet.Length).ConfigureAwait(false);
+                }
             }
             return false;
         }
@@ -122,10 +127,7 @@ namespace linker.messenger.tuntap.client
             {
                 return connection.PacketBuffer.Length > 0;
             }
-            else
-            {
-                _ = ConnectTunnel(ip).ConfigureAwait(false);
-            }
+            _ = ConnectTunnel(ip).ConfigureAwait(false);
             return false;
         }
 

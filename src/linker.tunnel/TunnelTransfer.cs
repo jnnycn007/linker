@@ -465,16 +465,15 @@ namespace linker.tunnel
                 eps.AddRange(tunnelTransportInfo.Remote.LocalIps.Where(c => c.AddressFamily == AddressFamily.InterNetwork).SelectMany(c => new List<IPEndPoint>
                 {
                     new IPEndPoint(c, tunnelTransportInfo.Remote.Local.Port),
-                    //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
-                    //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
                 }));
             }
             //在尝试外网
+            /*
             eps.AddRange(new List<IPEndPoint>{
                 new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port),
                 new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port+1)
             });
-            /*
+            */
             if (tunnelTransportInfo.TransportType == TunnelProtocolType.Udp)
             {
                 for (int i = tunnelTransportInfo.Remote.Remote.Port - 200; i < tunnelTransportInfo.Remote.Remote.Port + 200; i++)
@@ -482,14 +481,12 @@ namespace linker.tunnel
                     eps.Add(new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address, i));
                 }
             }
-            */
+            
 
             //再尝试IPV6
             eps.AddRange(tunnelTransportInfo.Remote.LocalIps.Where(c => c.AddressFamily == AddressFamily.InterNetworkV6).SelectMany(c => new List<IPEndPoint>
             {
                 new IPEndPoint(c, tunnelTransportInfo.Remote.Local.Port),
-                //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port),
-                //new IPEndPoint(c, tunnelTransportInfo.Remote.Remote.Port + 1)
              }));
             //本机有V6
             bool hasV6 = tunnelTransportInfo.Local.LocalIps.Any(c => c.AddressFamily == AddressFamily.InterNetworkV6);
