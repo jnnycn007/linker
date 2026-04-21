@@ -18,6 +18,7 @@ namespace linker.tunnel
         private readonly List<ITunnelTransport> transports;
         private readonly TunnelWanPortTransfer tunnelWanPortTransfer;
         private readonly TunnelUpnpTransfer tunnelUpnpTransfer;
+        private readonly TunnelQuicTransfer tunnelQuicTransfer = new TunnelQuicTransfer();
 
         public VersionManager OperatingVersion => operating.DataVersion;
         public ConcurrentDictionary<string, bool> Operating => operating.StringKeyValue;
@@ -30,6 +31,7 @@ namespace linker.tunnel
         public TunnelTransfer(ITunnelMessengerAdapter tunnelMessengerAdapter)
         {
             this.tunnelMessengerAdapter = tunnelMessengerAdapter;
+            tunnelQuicTransfer.Listen(tunnelMessengerAdapter.Certificate);
 
             TransportUdpPortMap transportUdpPortMap = new TransportUdpPortMap(tunnelMessengerAdapter);
             TransportTcpPortMap transportTcpPortMap = new TransportTcpPortMap(tunnelMessengerAdapter);
@@ -223,7 +225,7 @@ namespace linker.tunnel
                                 }
 
                                 //获取自己的外网ip
-                                Task<TunnelTransportWanPortInfo> localInfo = GetLocalInfo(wanPortProtocol);
+                                Task<TunnelTransportWanPortInfo> localInfo = GetWanPort(wanPortProtocol);
                                 //获取对方的外网ip
                                 Task<TunnelTransportWanPortInfo> remoteInfo = tunnelMessengerAdapter.GetRemoteWanPort(new TunnelWanPortProtocolInfo
                                 {
@@ -269,7 +271,7 @@ namespace linker.tunnel
                                 ITunnelConnection connection = await transport.ConnectAsync(tunnelTransportInfo).ConfigureAwait(false);
                                 if (connection != null)
                                 {
-                                    OnConnected(connection);
+                                    OnConnected(connection, tunnelTransportInfo);
                                     return connection;
                                 }
                             }
@@ -370,13 +372,13 @@ namespace linker.tunnel
         /// <returns></returns>
         public async Task<TunnelTransportWanPortInfo> GetWanPort(TunnelWanPortProtocolInfo _info)
         {
-            return await GetLocalInfo(_info.ProtocolType).ConfigureAwait(false);
+            return await GetWanPort(_info.ProtocolType).ConfigureAwait(false);
         }
         /// <summary>
         /// 获取自己的外网IP
         /// </summary>
         /// <returns></returns>
-        private async Task<TunnelTransportWanPortInfo> GetLocalInfo(TunnelWanPortProtocolType tunnelWanPortProtocolType)
+        private async Task<TunnelTransportWanPortInfo> GetWanPort(TunnelWanPortProtocolType tunnelWanPortProtocolType)
         {
             if (tunnelMessengerAdapter.ServerHost == null || string.IsNullOrWhiteSpace(tunnelMessengerAdapter.MachineId))
             {
@@ -419,37 +421,41 @@ namespace linker.tunnel
             if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
                 LoggerHelper.Instance.Info($"tunnel connecting from {tunnelTransportInfo.Remote.MachineId}->{tunnelTransportInfo.Remote.MachineName}");
         }
-        /// <summary>
-        /// 连接成功
-        /// </summary>
-        /// <param name="connection"></param>
-        private void OnConnected(ITunnelConnection connection)
+        private void OnConnected(ITunnelConnection connection, TunnelTransportInfo info)
         {
-            if (connection == null) return;
-            if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                LoggerHelper.Instance.Debug($"tunnel connect {connection.RemoteMachineId}->{connection.RemoteMachineName} success->{connection.IPEndPoint}");
+            tunnelQuicTransfer.Transform(connection, info).ContinueWith((result) =>
+            {
+                connection = result.Result;
 
-            //调用以下别人注册的回调
-            if (OnConnectedDic.TryGetValue(Helper.GlobalString, out List<Action<ITunnelConnection>> callbacks))
-            {
-                foreach (var item in callbacks)
+                if (connection == null) return;
+                if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                    LoggerHelper.Instance.Debug($"tunnel connect {connection.RemoteMachineId}->{connection.RemoteMachineName} success->{connection.IPEndPoint}");
+
+                //调用以下别人注册的回调
+                if (OnConnectedDic.TryGetValue(Helper.GlobalString, out List<Action<ITunnelConnection>> callbacks))
                 {
-                    item(connection);
+                    foreach (var item in callbacks)
+                    {
+                        item(connection);
+                    }
                 }
-            }
-            if (OnConnectedDic.TryGetValue(connection.TransactionId, out callbacks))
-            {
-                foreach (var item in callbacks)
+                if (OnConnectedDic.TryGetValue(connection.TransactionId, out callbacks))
                 {
-                    item(connection);
+                    foreach (var item in callbacks)
+                    {
+                        item(connection);
+                    }
                 }
-            }
+            });
+
+
         }
         private static void OnConnectFail(TunnelTransportInfo tunnelTransportInfo)
         {
             if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
                 LoggerHelper.Instance.Error($"tunnel connect {tunnelTransportInfo.Remote.MachineId} fail");
         }
+
 
         private void ParseRemoteEndPoint(TunnelTransportInfo tunnelTransportInfo, Addrs addr)
         {
@@ -482,7 +488,7 @@ namespace linker.tunnel
                     new IPEndPoint(tunnelTransportInfo.Remote.Remote.Address,tunnelTransportInfo.Remote.Remote.Port+1)
                 });
             }
-            
+
 
             //再尝试IPV6
             eps.AddRange(tunnelTransportInfo.Remote.LocalIps.Where(c => c.AddressFamily == AddressFamily.InterNetworkV6).SelectMany(c => new List<IPEndPoint>
@@ -534,12 +540,8 @@ namespace linker.tunnel
             return $"{remoteMachineId}@{transactionId}@{flag}";
         }
 
+
         private ConcurrentDictionary<string, CancellationTokenSource> backgroundDic = new ConcurrentDictionary<string, CancellationTokenSource>();
-        /// <summary>
-        /// 开始后台打洞
-        /// </summary>
-        /// <param name="remoteMachineId"></param>
-        /// <param name="transactionId"></param>
         public void StartBackground(string remoteMachineId, string transactionId, TunnelProtocolType denyProtocols, Func<bool> stopCallback, Func<ITunnelConnection, Task> resultCallback, int times = 10, int delay = 10000)
         {
             if (AddBackground(remoteMachineId, transactionId, out CancellationTokenSource cts) == false)
@@ -591,12 +593,6 @@ namespace linker.tunnel
                 cts.Cancel();
             }
         }
-        /// <summary>
-        /// 是否正在后台打洞
-        /// </summary>
-        /// <param name="remoteMachineId"></param>
-        /// <param name="transactionId"></param>
-        /// <returns></returns>
         public bool IsBackground(string remoteMachineId, string transactionId)
         {
             return backgroundDic.ContainsKey(GetBackgroundKey(remoteMachineId, transactionId));

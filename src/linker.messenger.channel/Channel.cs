@@ -36,7 +36,7 @@ namespace linker.messenger.channel
             }
             return false;
         }
-        public void Add(ITunnelConnection connection)
+        public ITunnelConnection Add(ITunnelConnection connection)
         {
             if (Connections.TryGetValue(connection.TransactionId, out ConcurrentDictionary<string, ITunnelConnection> _connections) == false)
             {
@@ -45,6 +45,7 @@ namespace linker.messenger.channel
             }
             _connections.AddOrUpdate(connection.RemoteMachineId, connection, (a, b) => connection);
             Version.Increment();
+            return connection;
         }
         public void Remove(string machineId, string transactionId)
         {
@@ -111,13 +112,12 @@ namespace linker.messenger.channel
             {
                 TimerHelper.SetTimeout(connectionOld.Dispose, 5000);
             }
-            channelConnectionCaching.Add(connection);
+            pcpTransfer.AddConnection(connection);
+            connection = channelConnectionCaching.Add(connection);
             Version.Increment();
 
             Connected(connection);
             Add(connection);
-            pcpTransfer.AddConnection(connection);
-
         }
 
         protected async ValueTask<ITunnelConnection> ConnectTunnel(string machineId, TunnelProtocolType denyProtocols)

@@ -40,7 +40,7 @@ namespace linker.tunnel.transport
         /// <summary>
         /// 连接成功
         /// </summary>
-        public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
+        public Action<ITunnelConnection, TunnelTransportInfo> OnConnected { get; set; } = (state,info) => { };
 
         private readonly ITunnelMessengerAdapter tunnelMessengerAdapter;
         public TransportTcpNutssb(ITunnelMessengerAdapter tunnelMessengerAdapter)
@@ -126,7 +126,7 @@ namespace linker.tunnel.transport
                 ITunnelConnection connection = await ConnectForward(tunnelTransportInfo).ConfigureAwait(false);
                 if (connection != null)
                 {
-                    OnConnected(connection);
+                    OnConnected(connection, tunnelTransportInfo);
                     await tunnelMessengerAdapter.SendConnectSuccess(tunnelTransportInfo).ConfigureAwait(false);
                 }
                 else
@@ -185,7 +185,8 @@ namespace linker.tunnel.transport
                         {
                             EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                             CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                            ClientCertificates = new X509CertificateCollection { certificate }
+                            ClientCertificates = new X509CertificateCollection { certificate },
+                            TargetHost = "www.snltty.com",
                         }, ctsSsl.Token).ConfigureAwait(false);
                     }
 
@@ -321,7 +322,7 @@ namespace linker.tunnel.transport
                         return;
                     }
 
-                    OnConnected(result);
+                    OnConnected(result, _state);
                 }
                 catch (Exception ex)
                 {

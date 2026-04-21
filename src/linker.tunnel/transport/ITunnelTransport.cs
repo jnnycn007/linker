@@ -51,7 +51,7 @@ namespace linker.tunnel.transport
         /// <summary>
         /// 收到连接
         /// </summary>
-        public Action<ITunnelConnection> OnConnected { get; set; }
+        public Action<ITunnelConnection, TunnelTransportInfo> OnConnected { get; set; }
 
         public void SetSSL(X509Certificate certificate);
 

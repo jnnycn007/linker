@@ -36,7 +36,7 @@ namespace linker.tunnel.transport
 
         public byte Order => 0;
 
-        public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
+        public Action<ITunnelConnection,TunnelTransportInfo> OnConnected { get; set; } = (state,info) => { };
 
         private readonly ICrypto crypto = CryptoFactory.CreateSymmetric(Helper.GlobalString);
 
@@ -97,7 +97,8 @@ namespace linker.tunnel.transport
                     {
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                        ClientCertificates = new X509CertificateCollection { messengerStore.Certificate }
+                        ClientCertificates = new X509CertificateCollection { messengerStore.Certificate },
+                        TargetHost = "www.snltty.com",
                     }).ConfigureAwait(false);
                 }
 
@@ -273,7 +274,7 @@ namespace linker.tunnel.transport
                 if (tunnelTransportInfo.SSL && certificate == null)
                 {
                     LoggerHelper.Instance.Error($"relay client {Name}->ssl Certificate not found");
-                    OnConnected(null);
+                    OnConnected(null, tunnelTransportInfo);
                     await tunnelMessengerAdapter.SendConnectFail(tunnelTransportInfo).ConfigureAwait(false);
                     return;
                 }
@@ -283,7 +284,7 @@ namespace linker.tunnel.transport
                 Socket socket = await ConnectServer(relay.Node).ConfigureAwait(false);
                 if (socket == null)
                 {
-                    OnConnected(null);
+                    OnConnected(null, tunnelTransportInfo);
                     await tunnelMessengerAdapter.SendConnectFail(tunnelTransportInfo).ConfigureAwait(false);
                     return;
                 }
@@ -299,7 +300,7 @@ namespace linker.tunnel.transport
                 if (await SendMessage(socket, relayMessage).ConfigureAwait(false))
                 {
                     ITunnelConnection connection = await WaitSSL(socket, tunnelTransportInfo, relay);
-                    OnConnected(connection);
+                    OnConnected(connection, tunnelTransportInfo);
                     await tunnelMessengerAdapter.SendConnectSuccess(tunnelTransportInfo).ConfigureAwait(false);
                     return;
                 }
@@ -312,7 +313,7 @@ namespace linker.tunnel.transport
                     LoggerHelper.Instance.Error(ex);
                 }
             }
-            OnConnected(null);
+            OnConnected(null, tunnelTransportInfo);
             await tunnelMessengerAdapter.SendConnectFail(tunnelTransportInfo).ConfigureAwait(false);
         }
         private async Task<TunnelConnectionTcp> WaitSSL(Socket socket, TunnelTransportInfo tunnelTransportInfo, RelayInfo relayInfo)

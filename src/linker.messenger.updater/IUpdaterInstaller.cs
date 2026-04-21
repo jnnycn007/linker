@@ -91,6 +91,9 @@ namespace linker.messenger.updater
                 return;
             }
 
+            ClearTempFiles("./web/",".css");
+            ClearTempFiles("./web/",".js");
+
             using ZipArchive archive = ZipFile.OpenRead("updater.zip");
 
             long total = archive.Entries.Sum(c => c.Length);
@@ -182,12 +185,12 @@ namespace linker.messenger.updater
         {
             ClearTempFiles();
         }
-        private void ClearTempFiles(string path = "./")
+        private void ClearTempFiles(string path = "./",string ext = ".temp")
         {
             string fullPath = Path.Join(Helper.CurrentDirectory, path);
             if (Directory.Exists(fullPath))
             {
-                foreach (var item in Directory.GetFiles(fullPath).Where(c => c.EndsWith(".temp")))
+                foreach (var item in Directory.GetFiles(fullPath).Where(c => c.EndsWith(ext)))
                 {
                     try
                     {

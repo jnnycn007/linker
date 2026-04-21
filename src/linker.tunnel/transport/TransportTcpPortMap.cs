@@ -39,9 +39,9 @@ namespace linker.tunnel.transport
 
         public byte Order => 2;
 
-        public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
+        public Action<ITunnelConnection, TunnelTransportInfo> OnConnected { get; set; } = (state, info) => { };
 
-        private readonly string authStr = "GET /bilivideo/tcp/index.html HTTP/1.1\r\nHost: upos-sz-mirrorbd.bilivideo.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {0}\r\n\r\n";
+        private readonly string authStr = "GET /snltty/tcp/index.html HTTP/1.1\r\nHost: www.snltty.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {0}\r\n\r\n";
         private readonly string endStr = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nCookie: {0}\r\n\r\nOK";
         private readonly byte[] cookieBytes = Encoding.UTF8.GetBytes("Cookie: ");
 
@@ -208,7 +208,7 @@ namespace linker.tunnel.transport
                 }
                 _ = WaitConnect(tunnelTransportInfo).ContinueWith((result) =>
                 {
-                    OnConnected(result.Result);
+                    OnConnected(result.Result, tunnelTransportInfo);
                 });
             }
             //我要连它，那就连接
@@ -225,7 +225,7 @@ namespace linker.tunnel.transport
                 ITunnelConnection connection = await ConnectForward(tunnelTransportInfo).ConfigureAwait(false);
                 if (connection != null)
                 {
-                    OnConnected(connection);
+                    OnConnected(connection, tunnelTransportInfo);
                     await tunnelMessengerAdapter.SendConnectSuccess(tunnelTransportInfo).ConfigureAwait(false);
                 }
                 else
@@ -344,6 +344,7 @@ namespace linker.tunnel.transport
                             EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                             CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                             ClientCertificates = new X509CertificateCollection { certificate },
+                            TargetHost = "www.snltty.com",
                         }, cts.Token).ConfigureAwait(false);
                     }
 

@@ -23,7 +23,8 @@ export const provideDevices = () => {
                 Page: 1, Size: ps, Name: name, Ids: [], Asc: asc, Prop: prop
             },
             Count: count,
-            List: Array(count).fill().map(c=>{ return {}})
+            List: Array(count).fill().map(c=>{ return {}}),
+            _list:[]
         },
         loadTimer:0,
 
@@ -136,6 +137,7 @@ export const provideDevices = () => {
                 devices.page.Request = res.Request;
                 devices.page.Count = res.Count;
                 devices.page.List = res.List;
+                devices.page._list = res.List.slice(0);
                 for(let name in hooks) {
                     hooks[name].changed = true;
                 }
@@ -201,7 +203,7 @@ export const provideDevices = () => {
     const _handleSort = ()=>{
         const prop = devices.page.Request.Prop;
         const asc = devices.page.Request.Asc;
-        let list = devices.page.List;
+        let list = devices.page._list.slice(1);
         switch(prop){
             case 'machineName':
                 list = asc 
@@ -243,11 +245,11 @@ export const provideDevices = () => {
             break;
             
             default:
-                   
             break;
 
         }
         list =  list.sort((a,b)=> b.Connected - a.Connected);    
+        list.splice(0,0,devices.page._list[0]);
         devices.page.List = list;
     }
     const handleSort = () => {

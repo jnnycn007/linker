@@ -154,7 +154,8 @@ namespace linker.messenger
                     {
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                        ClientCertificates = new X509CertificateCollection { messengerStore.Certificate }
+                        ClientCertificates = new X509CertificateCollection { messengerStore.Certificate },
+                        TargetHost = "www.snltty.com",
                     }, cts.Token).ConfigureAwait(false);
 
                     IConnection connection = CreateConnection(sslStream, networkStream, socket, socket.LocalEndPoint as IPEndPoint, socket.RemoteEndPoint as IPEndPoint);

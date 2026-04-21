@@ -39,10 +39,10 @@ namespace linker.tunnel.transport
         /// <summary>
         /// 连接成功
         /// </summary>
-        public Action<ITunnelConnection> OnConnected { get; set; } = (state) => { };
+        public Action<ITunnelConnection, TunnelTransportInfo> OnConnected { get; set; } = (state, info) => { };
 
 
-        private readonly byte[] authBytes = Encoding.UTF8.GetBytes($"GET /bilivideo/tcp/index.html HTTP/1.1\r\nHost: upos-sz-mirrorbd.bilivideo.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {Helper.GlobalString}.tcp.ttl1\r\n\r\n");
+        private readonly byte[] authBytes = Encoding.UTF8.GetBytes($"GET /snltty/tcp/index.html HTTP/1.1\r\nHost: www.snltty.com\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nCookie: {Helper.GlobalString}.tcp.ttl1\r\n\r\n");
         private readonly byte[] endBytes = Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nCookie: {Helper.GlobalString}.tcp.end1\r\n\r\nOK");
 
         private readonly ITunnelMessengerAdapter tunnelMessengerAdapter;
@@ -97,7 +97,7 @@ namespace linker.tunnel.transport
             ITunnelConnection connection = await ConnectForward(tunnelTransportInfo, TunnelMode.Server).ConfigureAwait(false);
             if (connection != null)
             {
-                OnConnected(connection);
+                OnConnected(connection, tunnelTransportInfo);
                 await tunnelMessengerAdapter.SendConnectSuccess(tunnelTransportInfo).ConfigureAwait(false);
             }
             else
@@ -145,7 +145,7 @@ namespace linker.tunnel.transport
                     targetSocket.IPv6Only(ep.AddressFamily, false);
                     targetSocket.ReuseBind(new IPEndPoint(ep.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, tunnelTransportInfo.Local.Local.Port));
 
-                    await targetSocket.ConnectAsync(ep,cts.Token).ConfigureAwait(false);
+                    await targetSocket.ConnectAsync(ep, cts.Token).ConfigureAwait(false);
 
                     return (true, targetSocket);
                 }
@@ -176,7 +176,7 @@ namespace linker.tunnel.transport
                 //随便发个消息看对方有没有收到
                 await socket.SendAsync(authBytes).ConfigureAwait(false);
                 //如果对方收到，会回个消息，不管是啥，回了就行
-                int length = await socket.ReceiveAsync(buffer.Memory,cts.Token).ConfigureAwait(false);
+                int length = await socket.ReceiveAsync(buffer.Memory, cts.Token).ConfigureAwait(false);
                 if (length == 0) return null;
 
                 //需要ssl
@@ -188,8 +188,9 @@ namespace linker.tunnel.transport
                     {
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                        ClientCertificates = new X509CertificateCollection { certificate }
-                    },ctsSsl.Token).ConfigureAwait(false);
+                        ClientCertificates = new X509CertificateCollection { certificate },
+                        TargetHost = "www.snltty.com",
+                    }, ctsSsl.Token).ConfigureAwait(false);
                 }
 
                 return new TunnelConnectionTcp
@@ -229,14 +230,14 @@ namespace linker.tunnel.transport
             try
             {
                 //对方会随便发个消息，不管是啥
-                int length = await socket.ReceiveAsync(buffer.Memory,cts.Token).ConfigureAwait(false);
+                int length = await socket.ReceiveAsync(buffer.Memory, cts.Token).ConfigureAwait(false);
                 if (length == 0)
                 {
                     return null;
                 }
                 //回个消息给它就完了
                 await socket.SendAsync(endBytes).ConfigureAwait(false);
-               
+
                 if (state.SSL)
                 {
                     if (certificate == null)

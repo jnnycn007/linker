@@ -41,7 +41,6 @@ namespace linker.messenger.tunnel.client
             signInClientState.OnSignInSuccessBefore += async () => { await GetRouteLevel().ConfigureAwait(false); tunnelTransfer.Refresh(); };
 
             Refresh();
-            TestQuic();
 
             PortMappingUtility.StartDiscovery();
             PortMappingUtility.OnChange += () =>
@@ -293,48 +292,5 @@ namespace linker.messenger.tunnel.client
             }).Where(c => c.Ips.Length > 0 && c.Ips.Any(d => d.Equals(IPAddress.Loopback)) == false).ToArray();
         }
 
-
-#pragma warning disable CA2252 // 此 API 需要选择加入预览功能
-        private void TestQuic()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-
-                if (QuicListener.IsSupported == false)
-                {
-                    try
-                    {
-                        if (File.Exists("msquic-openssl.dll"))
-                        {
-                            LoggerHelper.Instance.Warning($"copy msquic-openssl.dll -> msquic.dll，please restart linker");
-                            File.Move("msquic.dll", "msquic.dll.temp", true);
-                            File.Move("msquic-openssl.dll", "msquic.dll", true);
-
-                            if (Environment.UserInteractive == false && OperatingSystem.IsWindows())
-                            {
-                                Helper.AppExit(1);
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-                try
-                {
-                    if (File.Exists("msquic.dll.temp"))
-                    {
-                        File.Delete("msquic.dll.temp");
-                    }
-                    if (File.Exists("msquic-openssl.dll"))
-                    {
-                        File.Delete("msquic-openssl.dll");
-                    }
-                }
-                catch (Exception)
-                {
-                }
-            }
-        }
     }
 }
