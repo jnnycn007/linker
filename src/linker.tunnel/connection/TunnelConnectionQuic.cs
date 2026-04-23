@@ -67,6 +67,8 @@ namespace linker.tunnel.connection
         public Socket RemoteUdp { get; init; }
 
 
+        public ITunnelConnection OriginConnection { get; init; }
+
         private ITunnelConnectionReceiveCallback callback;
         private CancellationTokenSource cts;
         private object userToken;
@@ -346,6 +348,8 @@ namespace linker.tunnel.connection
             Stream?.Dispose();
             Connection?.CloseAsync(0x0a);
             Connection?.DisposeAsync();
+
+            QuicUdp?.Close();
 
             try
             {

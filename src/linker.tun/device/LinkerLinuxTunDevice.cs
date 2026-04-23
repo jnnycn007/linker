@@ -151,14 +151,14 @@ namespace linker.tun.device
             if (value >= 7 && value < 1500)
             {
                 string _value = value == 7 ? "--clamp-mss-to-pmtu" : $"--set-mss {value}";
-                
+
                 CommandHelper.Linux(string.Empty, new string[] {
                     $"iptables -t mangle -A INPUT -i {Name} -p tcp --syn -j TCPMSS {_value}",
                     $"iptables -t mangle -A OUTPUT -o {Name} -p tcp --syn -j TCPMSS {_value}",
                     $"iptables -t mangle -A FORWARD -i {Name} -o {interfaceLinux} -p tcp --syn -j TCPMSS {_value}",
                     $"iptables -t mangle -A FORWARD -i {interfaceLinux} -o {Name} -p tcp --syn -j TCPMSS {_value}",
                 });
-                
+
             }
         }
         public void SetMtu(int value)
@@ -186,26 +186,18 @@ namespace linker.tun.device
             {
                 IPAddress network = NetworkHelper.ToNetworkIP(address, NetworkHelper.ToPrefixValue(prefixLength));
 
-                string support = CommandHelper.Linux(string.Empty, new string[] { "iptables -m state -h" }, out string supportError);
-                bool isSupport = string.IsNullOrWhiteSpace(supportError) && support.Contains("No such file or directory") == false;
-
                 string str = CommandHelper.Linux(string.Empty, new string[] {
                     $"sysctl -w net.ipv4.ip_forward=1",
                     $"sysctl -w net.ipv4.conf.{Name}.forwarding=1",
+                    @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j (ACCEPT|MASQUERADE|DROP|REJECT)"" | iptables-restore",
 
-                    $"iptables -A FORWARD -i {interfaceLinux} -o {Name} -j ACCEPT",
-                    $"iptables -A FORWARD -i {Name} -j ACCEPT",
+                    $"iptables -I FORWARD -i {Name} -j ACCEPT",
+                    $"iptables -I FORWARD -o {Name} -j ACCEPT",
 
-                    $"iptables -t nat -A POSTROUTING -o {Name} -j MASQUERADE",
-                    $"iptables -t nat -A POSTROUTING ! -o {Name} -s {network}/{prefixLength} -j MASQUERADE",
-
-                    isSupport ? $"iptables -A FORWARD -i {Name} -o {interfaceLinux} -m state --state ESTABLISHED,RELATED -j ACCEPT"
-                        :  $"iptables -A FORWARD -i {Name} -o {interfaceLinux} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT",
-
-                    isSupport ? $"iptables -A FORWARD -o {Name} -m state --state ESTABLISHED,RELATED -j ACCEPT"
-                    : $"iptables -A FORWARD -o {Name} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT",
+                    $"iptables -t nat -I POSTROUTING -o {Name} -j MASQUERADE",
+                    $"iptables -t nat -I POSTROUTING ! -o {Name} -s {network}/{prefixLength} -j MASQUERADE",
                 });
-                RestartFirewall();
+                //RestartFirewall();
             }
             catch (Exception ex)
             {
@@ -224,7 +216,7 @@ namespace linker.tun.device
                     @$"iptables-save | grep -v -E -- ""-[oi] {Name}\s*.*\s* -j TCPMSS"" | iptables-restore",
                     @$"iptables-save | grep -v -E -- ""-[oi] {interfaceLinux}\s*.*\s* -j TCPMSS"" | iptables-restore",
                 });
-                RestartFirewall();
+                //RestartFirewall();
             }
             catch (Exception ex)
             {

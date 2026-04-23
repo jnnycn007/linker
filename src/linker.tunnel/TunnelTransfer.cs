@@ -197,7 +197,7 @@ namespace linker.tunnel
                     ITunnelTransport transport = transports.FirstOrDefault(c => c.Name == transportItem.Name);
 
                     //找不到这个打洞协议，或者是不支持的协议
-                    if (transport == null || (transport.ProtocolType & denyProtocols) == transport.ProtocolType)
+                    if (transport == null /*|| (transport.ProtocolType & denyProtocols) == transport.ProtocolType*/)
                     {
                         continue;
                     }

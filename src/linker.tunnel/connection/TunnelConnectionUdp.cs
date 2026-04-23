@@ -51,7 +51,8 @@ namespace linker.tunnel.connection
         [JsonIgnore]
         public byte[] PacketBuffer { get; set; } = Helper.EmptyArray;
 
-        public bool Receive { get; init; }
+        public bool Receive { get; init; } = true;
+        public bool Send { get; set; } = true;
 
         [JsonIgnore]
         public Socket UdpClient { get; init; }
@@ -78,12 +79,15 @@ namespace linker.tunnel.connection
 
             cts = new CancellationTokenSource();
 
-            _ = Sender();
             if (Receive)
             {
                 _ = ProcessWrite();
             }
-            _ = ProcessHeart();
+            if (Send)
+            {
+                _ = Sender();
+                _ = ProcessHeart();
+            }
         }
         private async Task ProcessWrite()
         {
@@ -100,7 +104,16 @@ namespace linker.tunnel.connection
                             LoggerHelper.Instance.Error($"tunnel connection writer offline 0");
                         continue;
                     }
-                    await CallbackPacket(buffer, 0, result.ReceivedBytes).ConfigureAwait(false);
+                    if (Send)
+                    {
+                        await CallbackPacket(buffer, 0, result.ReceivedBytes).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await callback.Receive(this, buffer.AsMemory(0, result.ReceivedBytes), this.userToken).ConfigureAwait(false);
+                    }
+                    ReceiveBytes += result.ReceivedBytes;
+                    LastTicks.Update();
                 }
             }
             catch (Exception ex)
@@ -128,14 +141,21 @@ namespace linker.tunnel.connection
             {
                 return false;
             }
-            await CallbackPacket(buffer, offset, length).ConfigureAwait(false);
+            if (Send)
+            {
+                await CallbackPacket(buffer, offset, length).ConfigureAwait(false);
+            }
+            else
+            {
+                await callback.Receive(this, buffer.AsMemory(offset, length), this.userToken).ConfigureAwait(false);
+            }
+            ReceiveBytes += length;
+            LastTicks.Update();
+
             return true;
         }
         private async Task CallbackPacket(byte[] buffer, int offset, int length)
         {
-            ReceiveBytes += length;
-            LastTicks.Update();
-
             Memory<byte> memory = buffer.AsMemory(offset, length);
             try
             {

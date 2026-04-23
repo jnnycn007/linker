@@ -12,6 +12,7 @@ namespace linker.tunnel.connection
         None = 0,
         Tcp = 1,
         Udp = 2,
+        Quic = 4,
         All = 255
     }
     /// <summary>
@@ -63,6 +64,8 @@ namespace linker.tunnel.connection
         /// <param name="state"></param>
         /// <returns></returns>
         public Task Closed(ITunnelConnection connection, object state);
+
+
     }
 
     /// <summary>

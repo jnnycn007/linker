@@ -26,19 +26,26 @@ namespace linker.tunnel
         }
         public async Task<ITunnelConnection> Transform(ITunnelConnection connection, TunnelTransportInfo info)
         {
-            return connection;
-
             if (connection is TunnelConnectionUdp udp == false || udp.TransactionId == "tuntap")
             {
                 return connection;
             }
-
+            udp.Send = false;
+            string key0 = $"{info.Remote.MachineId}->{info.TransactionId}->{info.FlowId}";
+            string key1 = $"{info.Local.MachineId}->{info.TransactionId}->{info.FlowId}";
+            Socket quicUdp = null;
             try
             {
-
-                if (udp.Direction == TunnelDirection.Forward)
+                if (udp.Mode == TunnelMode.Client)
                 {
-                    Socket quicUdp = Local2RemoteQuic(udp.UdpClient, udp.IPEndPoint);
+                    await Task.Delay(1000).ConfigureAwait(false);
+                    quicUdp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    quicUdp.Bind(new IPEndPoint(IPAddress.Any, 0));
+                    quicUdp.WindowsUdpBug();
+
+                    TunnelCallback callback = new TunnelCallback(quicUdp, null, udp);
+                    _ = callback.Receive().ConfigureAwait(false);
+                    udp.BeginReceive(callback, null);
 
                     using CancellationTokenSource cts = new CancellationTokenSource(3000);
                     QuicConnection quicConnection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions
@@ -60,113 +67,254 @@ namespace linker.tunnel
                     }, cts.Token).ConfigureAwait(false);
                     QuicStream quicStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional).ConfigureAwait(false);
 
-                    string key = $"{info.Remote.MachineId}->{info.TransactionId}->{info.FlowId}";
-                    await quicStream.WriteAsync(Encoding.UTF8.GetBytes(key)).ConfigureAwait(false);
+                    await quicStream.WriteAsync(Encoding.UTF8.GetBytes(key0)).ConfigureAwait(false);
+                    TunnelConnectionQuic quic = new TunnelConnectionQuic
+                    {
+                        QuicUdp = quicUdp,
+                        RemoteUdp = udp.UdpClient,
+                        Stream = quicStream,
+                        Connection = quicConnection,
+                        IPEndPoint = udp.IPEndPoint.MapToIPv4(),
+                        TransactionId = info.TransactionId,
+                        TransactionTag = info.TransactionTag,
+                        RemoteMachineId = info.Remote.MachineId,
+                        RemoteMachineName = info.Remote.MachineName,
+                        TransportName = info.TransportName,
+                        Direction = info.Direction,
+                        ProtocolType = TunnelProtocolType.Quic,
+                        Type = connection.Type,
+                        Mode = connection.Mode,
+                        Label = connection.Label,
+                        BufferSize = info.BufferSize,
+                        OriginConnection = connection,
+                    };
+                    callback.SetQuic(quic);
+                    return quic;
                 }
                 else
                 {
-                    _ = Remote2LocalQuic(udp.UdpClient, udp.IPEndPoint);
-                    string key = $"{info.Local.MachineId}->{info.TransactionId}->{info.FlowId}";
-                    try
+
+                    quicUdp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    quicUdp.WindowsUdpBug();
+
+                    TunnelCallback callback = new TunnelCallback(quicUdp, quicListenEP, udp);
+                    udp.BeginReceive(callback, null);
+
+                    TaskCompletionSource<(QuicConnection connection, QuicStream stream)> tcs = new();
+                    dic.AddOrUpdate(key1, tcs, (k, v) => tcs);
+                    (QuicConnection quicConnection, QuicStream quicStream) = await tcs.WithTimeout(3000).ConfigureAwait(false);
+                    TunnelConnectionQuic quic = new TunnelConnectionQuic
                     {
-                        using CancellationTokenSource cts = new CancellationTokenSource(3000);
-                        TaskCompletionSource<(QuicConnection connection, QuicStream stream)> tcs = new(cts.Token);
-                        dic.AddOrUpdate(key, tcs, (k, v) => tcs);
-                        (QuicConnection quicConnection, QuicStream quicStream) = await tcs.Task.ConfigureAwait(false);
-                    }
-                    catch (Exception)
-                    {
-                        dic.TryRemove(key, out _);
-                    }
+                        QuicUdp = quicUdp,
+                        RemoteUdp = udp.UdpClient,
+                        Stream = quicStream,
+                        Connection = quicConnection,
+                        IPEndPoint = udp.IPEndPoint.MapToIPv4(),
+                        TransactionId = info.TransactionId,
+                        TransactionTag = info.TransactionTag,
+                        RemoteMachineId = info.Remote.MachineId,
+                        RemoteMachineName = info.Remote.MachineName,
+                        TransportName = info.TransportName,
+                        Direction = info.Direction,
+                        ProtocolType = TunnelProtocolType.Quic,
+                        Type = connection.Type,
+                        Mode = connection.Mode,
+                        Label = connection.Label,
+                        BufferSize = info.BufferSize,
+                        OriginConnection = connection,
+                    };
+                    callback.SetQuic(quic);
+                    return quic;
+
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LoggerHelper.Instance.Error(ex);
+                quicUdp?.SafeClose();
+            }
+            finally
+            {
+                dic.TryRemove(key1, out _);
             }
 
             connection?.Dispose();
             return null;
         }
 
-        private async Task Remote2LocalQuic(Socket remoteUdp, IPEndPoint remoteEp)
+        private async Task QuicListen(X509Certificate certificate)
+        {
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                try
+                {
+                    if (QuicListener.IsSupported == false)
+                    {
+                        LoggerHelper.Instance.Warning($"msquic not supported, need win11+,or linux, or try to restart linker");
+                        return;
+                    }
+                    if (certificate == null)
+                    {
+                        LoggerHelper.Instance.Warning($"msquic need ssl");
+                        return;
+                    }
+
+                    QuicListener listener = await QuicListener.ListenAsync(new QuicListenerOptions
+                    {
+                        ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                        ListenBacklog = int.MaxValue,
+                        ListenEndPoint = new IPEndPoint(IPAddress.Any, 0),
+                        ConnectionOptionsCallback = (connection, hello, token) =>
+                        {
+                            return ValueTask.FromResult(new QuicServerConnectionOptions
+                            {
+                                MaxInboundBidirectionalStreams = 65535,
+                                MaxInboundUnidirectionalStreams = 65535,
+                                DefaultCloseErrorCode = 0x0a,
+                                DefaultStreamErrorCode = 0x0b,
+                                IdleTimeout = TimeSpan.FromMilliseconds(15000),
+                                ServerAuthenticationOptions = new SslServerAuthenticationOptions
+                                {
+                                    ServerCertificate = certificate,
+                                    EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
+                                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 }
+                                }
+                            });
+                        }
+                    }).ConfigureAwait(false);
+
+                    quicListenEP = new IPEndPoint(IPAddress.Loopback, listener.LocalEndPoint.Port);
+                    while (true)
+                    {
+                        try
+                        {
+                            QuicConnection quicConnection = await listener.AcceptConnectionAsync().ConfigureAwait(false);
+                            TimerHelper.Async(async () =>
+                            {
+                                while (true)
+                                {
+                                    QuicStream quicStream = await quicConnection.AcceptInboundStreamAsync().ConfigureAwait(false);
+                                    try
+                                    {
+                                        using CancellationTokenSource cts = new CancellationTokenSource(3000);
+                                        using IMemoryOwner<byte> bufferOwner = MemoryPool<byte>.Shared.Rent(8 * 1024);
+                                        int length = await quicStream.ReadAsync(bufferOwner.Memory, cts.Token).ConfigureAwait(false);
+                                        string key = Encoding.UTF8.GetString(bufferOwner.Memory.Slice(0, length).Span);
+                                        if (dic.TryRemove(key, out TaskCompletionSource<(QuicConnection connection, QuicStream stream)> tcs))
+                                        {
+                                            tcs.TrySetResult((quicConnection, quicStream));
+                                        }
+                                        else
+                                        {
+                                            quicStream.Close();
+                                        }
+                                    }
+                                    catch (Exception)
+                                    {
+                                        quicStream?.Close();
+                                    }
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                            {
+                                LoggerHelper.Instance.Error(ex);
+                            }
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
+                    {
+                        LoggerHelper.Instance.Error(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public sealed class TunnelCallback : ITunnelConnectionReceiveCallback
+    {
+        private ITunnelConnection quic;
+        private readonly Socket localUdp;
+        private IPEndPoint localEp;
+        private readonly Socket remoteUdp;
+        private readonly IPEndPoint remoteEp;
+        private bool first = true;
+
+        private readonly CancellationTokenSource cts = new();
+
+        public TunnelCallback(Socket localUdp, IPEndPoint localEp, TunnelConnectionUdp udp)
+        {
+            this.localUdp = localUdp;
+            this.localEp = localEp;
+            this.remoteUdp = udp.UdpClient;
+            this.remoteEp = udp.IPEndPoint;
+
+            first = localEp != null;
+        }
+
+        public void SetQuic(ITunnelConnection quic)
+        {
+            this.quic = quic;
+        }
+
+        public async Task Closed(ITunnelConnection connection, object state)
+        {
+            cts?.Cancel();
+            quic?.Dispose();
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
+
+        public async Task<bool> Receive()
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
             IPEndPoint tempEp = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
-            Socket quicUdp = null;
+            using CancellationTokenSource cts = new(1000);
             try
             {
-                //等待对方来一条消息
-                SocketReceiveFromResult result = await remoteUdp.ReceiveFromAsync(buffer, tempEp).ConfigureAwait(false);
+                SocketReceiveFromResult result = await localUdp.ReceiveFromAsync(buffer, tempEp, cts.Token).ConfigureAwait(false);
+                localEp = result.RemoteEndPoint as IPEndPoint;
+                await remoteUdp.SendToAsync(buffer.AsMemory(0, result.ReceivedBytes), remoteEp).ConfigureAwait(false);
 
-                //发给QUIC监听，因为UDP，必须先发一条数据，然后才能接收，所以，先给QUIC发一条，才能拿去交换数据
-                quicUdp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                quicUdp.WindowsUdpBug();
-                await quicUdp.SendToAsync(buffer.AsMemory(0, result.ReceivedBytes), quicListenEP).ConfigureAwait(false);
+                _ = CopyToAsync(localUdp, remoteUdp, remoteEp);
 
-                //然后就可以交换数据了
-                await Task.WhenAny(CopyToAsync(remoteUdp, quicUdp, quicListenEP), CopyToAsync(quicUdp, remoteUdp, remoteEp)).ConfigureAwait(false);
+                return true;
             }
-            catch (Exception ex)
-            {
-                if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                {
-                    LoggerHelper.Instance.Error(ex);
-                }
-            }
-            finally
-            {
-                quicUdp?.SafeClose();
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-
-
-        private Socket Local2RemoteQuic(Socket remoteUdp, IPEndPoint remoteEP)
-        {
-            Socket localUdp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
-            localUdp.Bind(new IPEndPoint(IPAddress.Any, 0));
-            localUdp.WindowsUdpBug();
-
-            _ = Local2RemoteQuic(remoteUdp, remoteEP, localUdp);
-
-            return localUdp;
-        }
-        private async Task Local2RemoteQuic(Socket remoteUdp, IPEndPoint remoteEP, Socket localUdp)
-        {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
-            IPEndPoint tempEp = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
-            try
-            {
-                SocketReceiveFromResult result = await localUdp.ReceiveFromAsync(buffer, tempEp).ConfigureAwait(false);
-                //quic的地址
-                IPEndPoint quicEp = result.RemoteEndPoint as IPEndPoint;
-                //发送给远端
-                await remoteUdp.SendToAsync(buffer.AsMemory(0, result.ReceivedBytes), remoteEP).ConfigureAwait(false);
-
-                await Task.WhenAny(CopyToAsync(localUdp, remoteUdp, remoteEP), CopyToAsync(remoteUdp, localUdp, quicEp)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                {
-                    LoggerHelper.Instance.Error(ex);
-                }
-            }
-            finally
+            catch (Exception)
             {
                 localUdp?.SafeClose();
+            }
+            finally
+            {
                 ArrayPool<byte>.Shared.Return(buffer);
             }
+            return false;
+        }
+        public async Task Receive(ITunnelConnection connection, ReadOnlyMemory<byte> data, object state)
+        {
+            await localUdp.SendToAsync(data, localEp).ConfigureAwait(false);
+
+            if (first)
+            {
+                first = false;
+                _ = CopyToAsync(localUdp, remoteUdp, remoteEp).ConfigureAwait(false);
+            }
+
         }
         private async Task CopyToAsync(Socket local, Socket remote, IPEndPoint remoteEp)
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(65535);
             IPEndPoint tempEp = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
             try
             {
                 while (true)
                 {
-                    SocketReceiveFromResult result = await local.ReceiveFromAsync(buffer, tempEp).ConfigureAwait(false);
+                    SocketReceiveFromResult result = await local.ReceiveFromAsync(buffer, tempEp, cts.Token).ConfigureAwait(false);
                     if (result.ReceivedBytes == 0)
                     {
                         continue;
@@ -183,89 +331,8 @@ namespace linker.tunnel
             }
             finally
             {
+                local?.SafeClose();
                 ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-        private async Task QuicListen(X509Certificate certificate)
-        {
-            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-            {
-                if (QuicListener.IsSupported == false)
-                {
-                    LoggerHelper.Instance.Warning($"msquic not supported, need win11+,or linux, or try to restart linker");
-                    return;
-                }
-                if (certificate == null)
-                {
-                    LoggerHelper.Instance.Warning($"msquic need ssl");
-                    return;
-                }
-                QuicListener listener = await QuicListener.ListenAsync(new QuicListenerOptions
-                {
-                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                    ListenBacklog = int.MaxValue,
-                    ListenEndPoint = new IPEndPoint(IPAddress.Any, 0),
-                    ConnectionOptionsCallback = (connection, hello, token) =>
-                    {
-                        return ValueTask.FromResult(new QuicServerConnectionOptions
-                        {
-                            MaxInboundBidirectionalStreams = 65535,
-                            MaxInboundUnidirectionalStreams = 65535,
-                            DefaultCloseErrorCode = 0x0a,
-                            DefaultStreamErrorCode = 0x0b,
-                            IdleTimeout = TimeSpan.FromMilliseconds(15000),
-                            ServerAuthenticationOptions = new SslServerAuthenticationOptions
-                            {
-                                ServerCertificate = certificate,
-                                EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
-                                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 }
-                            }
-                        });
-                    }
-                }).ConfigureAwait(false);
-
-                quicListenEP = new IPEndPoint(IPAddress.Loopback, listener.LocalEndPoint.Port);
-                while (true)
-                {
-                    try
-                    {
-                        QuicConnection quicConnection = await listener.AcceptConnectionAsync().ConfigureAwait(false);
-                        TimerHelper.Async(async () =>
-                        {
-                            while (true)
-                            {
-                                QuicStream quicStream = await quicConnection.AcceptInboundStreamAsync().ConfigureAwait(false);
-                                try
-                                {
-                                    using CancellationTokenSource cts = new CancellationTokenSource(3000);
-                                    using IMemoryOwner<byte> bufferOwner = MemoryPool<byte>.Shared.Rent(8 * 1024);
-                                    int length = await quicStream.ReadAsync(bufferOwner.Memory, cts.Token).ConfigureAwait(false);
-                                    string key = Encoding.UTF8.GetString(bufferOwner.Memory.Slice(0, length).Span);
-                                    if (dic.TryRemove(key, out TaskCompletionSource<(QuicConnection connection, QuicStream stream)> tcs))
-                                    {
-                                        tcs.TrySetResult((quicConnection, quicStream));
-                                    }
-                                    else
-                                    {
-                                        quicStream.Close();
-                                    }
-                                }
-                                catch (Exception)
-                                {
-                                    quicStream?.Close();
-                                }
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                        {
-                            LoggerHelper.Instance.Error(ex);
-                        }
-                        break;
-                    }
-                }
             }
         }
     }

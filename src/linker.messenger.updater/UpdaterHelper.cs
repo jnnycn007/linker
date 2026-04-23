@@ -15,6 +15,7 @@ namespace linker.messenger.updater
             this.updaterCommonTransfer = updaterCommonTransfer;
             this.updaterInstaller = updaterInstaller;
 
+            updaterCommonTransfer.SetInterval(900);
             updaterInstaller.Clear();
         }
 
