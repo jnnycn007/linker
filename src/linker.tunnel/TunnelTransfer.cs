@@ -31,7 +31,7 @@ namespace linker.tunnel
         public TunnelTransfer(ITunnelMessengerAdapter tunnelMessengerAdapter)
         {
             this.tunnelMessengerAdapter = tunnelMessengerAdapter;
-            tunnelQuicTransfer.Listen(tunnelMessengerAdapter.Certificate);
+            tunnelQuicTransfer.Listen(tunnelMessengerAdapter.CertificateExport);
 
             TransportUdpPortMap transportUdpPortMap = new TransportUdpPortMap(tunnelMessengerAdapter);
             TransportTcpPortMap transportTcpPortMap = new TransportTcpPortMap(tunnelMessengerAdapter);

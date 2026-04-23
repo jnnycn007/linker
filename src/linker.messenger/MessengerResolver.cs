@@ -71,7 +71,7 @@ namespace linker.messenger
         /// <returns></returns>
         public async Task BeginReceiveServer(Socket socket, Memory<byte> memory)
         {
-            
+
             NetworkStream networkStream = new NetworkStream(socket, false);
             SslStream sslStream = new SslStream(networkStream, true, ValidateServerCertificate, null);
             try
@@ -155,7 +155,6 @@ namespace linker.messenger
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                         ClientCertificates = new X509CertificateCollection { messengerStore.Certificate },
-                        TargetHost = "www.snltty.com",
                     }, cts.Token).ConfigureAwait(false);
 
                     IConnection connection = CreateConnection(sslStream, networkStream, socket, socket.LocalEndPoint as IPEndPoint, socket.RemoteEndPoint as IPEndPoint);

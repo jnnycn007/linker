@@ -189,7 +189,6 @@ namespace linker.tunnel.transport
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                         ClientCertificates = new X509CertificateCollection { certificate },
-                        TargetHost = "www.snltty.com",
                     }, ctsSsl.Token).ConfigureAwait(false);
                 }
 

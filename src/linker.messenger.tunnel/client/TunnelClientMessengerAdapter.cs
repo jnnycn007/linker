@@ -90,6 +90,7 @@ namespace linker.messenger.tunnel.client
         public int RouteLevelPlus => tunnelClientStore.RouteLevelPlus;
         public IPEndPoint ServerHost => signInClientState.Connection?.Address ?? null;
         public X509Certificate Certificate => messengerStore.Certificate;
+        public X509Certificate CertificateExport => messengerStore.CertificateExport;
         public int PortMapPrivate => tunnelClientStore.PortMapPrivate;
         public int PortMapPublic => tunnelClientStore.PortMapPublic;
         public IPAddress InIp => tunnelClientStore.InIp;

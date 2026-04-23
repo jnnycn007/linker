@@ -98,7 +98,6 @@ namespace linker.tunnel.transport
                         EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                         ClientCertificates = new X509CertificateCollection { messengerStore.Certificate },
-                        TargetHost = "www.snltty.com",
                     }).ConfigureAwait(false);
                 }
 

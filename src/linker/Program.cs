@@ -14,6 +14,7 @@ namespace linker
     {
         static async Task Main(string[] args)
         {
+            AppContext.SetSwitch("System.Net.Security.DisableServerNameChecks", true);
             ServicePointManager.CheckCertificateRevocationList = false;
 #if DEBUG
 #else
