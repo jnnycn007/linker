@@ -22,6 +22,7 @@ namespace linker.tunnel
         private IPEndPoint quicListenEP = new IPEndPoint(IPAddress.Any, 0);
         public void Listen(X509Certificate certificate)
         {
+            TestQuic();
             _ = QuicListen(certificate);
         }
         public async Task<ITunnelConnection> Transform(ITunnelConnection connection, TunnelTransportInfo info)
@@ -232,6 +233,27 @@ namespace linker.tunnel
                     {
                         LoggerHelper.Instance.Error(ex);
                     }
+                }
+            }
+        }
+
+
+        private void TestQuic()
+        {
+            if (OperatingSystem.IsWindows() && QuicListener.IsSupported == false && File.Exists("msquic-openssl.dll"))
+            {
+                try
+                {
+                    LoggerHelper.Instance.Warning($"copy msquic-openssl.dll -> msquic.dll，please restart linker");
+                    File.Move("msquic-openssl.dll", "msquic.dll", true);
+
+                    if (Environment.UserInteractive == false)
+                    {
+                        Helper.AppExit(1);
+                    }
+                }
+                catch (Exception)
+                {
                 }
             }
         }
