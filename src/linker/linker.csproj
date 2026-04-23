@@ -22,7 +22,7 @@
 5. #94 客户端可以设置头像，可以是图片url或json描述样式
 6. #96 变长掩码子网、#98 mss钳制，优化之前版本的设置错误导致隧道断开
 7. 优化打洞，UDP、IPV4和IPV6冲突、局域网冲突、msquic包装UDP隧道
-8. FakeHTTP，可能有助于一些简单QOS提速
+8. FakeHTTP，可能有助于一些简单QOS的提速
 9. 优化UI，列表加载更流畅，更多排序选项</Description>
 		<Copyright>snltty</Copyright>
 		<PackageProjectUrl>https://github.com/snltty/linker</PackageProjectUrl>
