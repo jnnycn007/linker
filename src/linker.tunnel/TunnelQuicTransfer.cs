@@ -330,7 +330,7 @@ namespace linker.tunnel
         }
         private async Task CopyToAsync(Socket local, Socket remote, IPEndPoint remoteEp)
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(65535);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
             IPEndPoint tempEp = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
             try
             {

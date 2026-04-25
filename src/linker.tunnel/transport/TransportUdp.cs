@@ -190,7 +190,7 @@ namespace linker.tunnel.transport
                     Label = string.Empty,
                     Receive = true,
                     SSL = tunnelTransportInfo.SSL,
-                    Crypto = CryptoFactory.CreateSymmetric(tunnelTransportInfo.Remote.MachineId)
+                    Crypto = CryptoFactory.CreateSymmetricGcm(tunnelTransportInfo.Remote.MachineId)
                 };
             }
             catch (Exception ex)
@@ -418,7 +418,7 @@ namespace linker.tunnel.transport
                         Label = string.Empty,
                         Receive = true,
                         SSL = state.SSL,
-                        Crypto = CryptoFactory.CreateSymmetric(state.Local.MachineId)
+                        Crypto = CryptoFactory.CreateSymmetricGcm(state.Local.MachineId)
                     };
                     if (reverseDic.TryRemove(state.Remote.MachineId, out TaskCompletionSource<ITunnelConnection> tcs))
                     {

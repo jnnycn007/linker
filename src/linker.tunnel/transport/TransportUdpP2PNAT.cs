@@ -163,7 +163,7 @@ namespace linker.tunnel.transport
                     }
 
 
-                    ISymmetricCrypto crypto = mode == TunnelMode.Client ? CryptoFactory.CreateSymmetric(tunnelTransportInfo.Remote.MachineId) : CryptoFactory.CreateSymmetric(tunnelTransportInfo.Local.MachineId);
+                    ISymmetricCryptoGcm crypto = mode == TunnelMode.Client ? CryptoFactory.CreateSymmetricGcm(tunnelTransportInfo.Remote.MachineId) : CryptoFactory.CreateSymmetricGcm(tunnelTransportInfo.Local.MachineId);
                     return new TunnelConnectionUdp
                     {
                         UdpClient = targetSocket,

@@ -68,6 +68,7 @@ namespace linker.tunnel.connection
         private readonly byte[] pingBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.ping");
         private readonly byte[] pongBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.pong");
         private readonly byte[] finBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.fing");
+        private readonly byte[] decodeBuffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
 
         private Pipe pipeSender;
         public void BeginReceive(ITunnelConnectionReceiveCallback callback, object userToken)
@@ -91,7 +92,7 @@ namespace linker.tunnel.connection
         }
         private async Task ProcessWrite()
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(65535);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
             IPEndPoint ep = new IPEndPoint(UdpClient.DualMode || IPEndPoint.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, 0);
             try
             {
@@ -161,7 +162,8 @@ namespace linker.tunnel.connection
             {
                 if (SSL)
                 {
-                    memory = Crypto.Decode(buffer, offset, length);
+                    Crypto.TryDecode(buffer.AsSpan(offset, length), decodeBuffer, out int bytesWritten);
+                    memory = decodeBuffer.AsMemory(0, bytesWritten);
                 }
                 if (memory.Length == pingBytes.Length && memory.Span.Slice(0, pingBytes.Length - 4).SequenceEqual(pingBytes.AsSpan(0, pingBytes.Length - 4)))
                 {
@@ -238,11 +240,8 @@ namespace linker.tunnel.connection
         private async Task Sender()
         {
             pipeSender = new Pipe(new PipeOptions(pauseWriterThreshold: maxRemaining, resumeWriterThreshold: (maxRemaining / 2), useSynchronizationContext: false));
-            byte[] encodeBuffer = ArrayPool<byte>.Shared.Rent(65 * 1024);
-            encodeBuffer[0] = 2; //relay
-            encodeBuffer[1] = 1; //forward
-            int index = Type == TunnelType.Relay ? 0 : 2;
-            int lengthPlus = Type == TunnelType.Relay ? 2 : 0;
+            byte[] readBuffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
+            byte[] encodeBuffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
             try
             {
                 while (cts.IsCancellationRequested == false)
@@ -269,27 +268,27 @@ namespace linker.tunnel.connection
                         else
                         {
                             //长度标识跨段了
-                            buffer.Slice(0, 4).CopyTo(encodeBuffer.AsSpan(2));
-                            packetLength = encodeBuffer.AsSpan(2).ToInt32();
+                            buffer.Slice(0, 4).CopyTo(readBuffer);
+                            packetLength = readBuffer.ToInt32();
                         }
                         //数据量不够
                         if (packetLength + 4 > buffer.Length) break;
 
                         //复制一份
                         ReadOnlySequence<byte> temp = buffer.Slice(4, packetLength);
-                        temp.CopyTo(encodeBuffer.AsSpan(2));
+                        temp.CopyTo(readBuffer);
 
-                        int sendLength = packetLength + lengthPlus;
                         if (SSL)
                         {
-                            var data = Crypto.Encode(encodeBuffer, 2, packetLength);
-                            data.AsMemory().CopyTo(encodeBuffer.AsMemory(2));
-                            sendLength = data.Length + lengthPlus;
+                            Crypto.TryEncode(readBuffer.AsSpan(0, packetLength), encodeBuffer, out int bytesWritten);
+                            await UdpClient.SendToAsync(encodeBuffer.AsMemory(0, bytesWritten), IPEndPoint, cts.Token).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await UdpClient.SendToAsync(readBuffer.AsMemory(0, packetLength), IPEndPoint, cts.Token).ConfigureAwait(false);
                         }
 
-                        await UdpClient.SendToAsync(encodeBuffer.AsMemory(index, sendLength), IPEndPoint, cts.Token).ConfigureAwait(false);
                         SendBytes += packetLength;
-
                         Interlocked.Add(ref sendRemaining, -packetLength);
 
                         //移动位置
@@ -311,7 +310,7 @@ namespace linker.tunnel.connection
                 }
                 Dispose();
             }
-            ArrayPool<byte>.Shared.Return(encodeBuffer);
+            ArrayPool<byte>.Shared.Return(readBuffer);
         }
 
         private readonly SemaphoreSlim slm = new SemaphoreSlim(1);

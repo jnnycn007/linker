@@ -110,7 +110,7 @@ namespace linker.messenger.updater
 
                 using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using FileStream fileStream = new FileStream(savePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-                using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(65535);
+                using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(4*1024);
                 int readBytes = 0;
                 while ((readBytes = await contentStream.ReadAsync(buffer.Memory).ConfigureAwait(false)) != 0)
                 {
