@@ -107,7 +107,7 @@ namespace linker.tunnel.connection
                     if (length == 0) break;
                     Interlocked.Add(ref recvRemaining, length);
                     pipeWriter.Writer.Advance(length);
-                    await pipeWriter.Writer.FlushAsync().ConfigureAwait(false);
+                    await pipeWriter.Writer.FlushAsync(cts.Token).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -259,7 +259,7 @@ namespace linker.tunnel.connection
             data.Length.ToBytes(heartData.AsSpan());
             data.AsMemory().CopyTo(heartData.AsMemory(4));
 
-            await SendAsync(heartData.AsMemory(0, length));
+            await SendAsync(heartData.AsMemory(0, length)).ConfigureAwait(false);
 
             ArrayPool<byte>.Shared.Return(heartData);
         }
@@ -271,7 +271,7 @@ namespace linker.tunnel.connection
             {
                 while (cts.IsCancellationRequested == false)
                 {
-                    ReadResult result = await pipeSender.Reader.ReadAsync().ConfigureAwait(false);
+                    ReadResult result = await pipeSender.Reader.ReadAsync(cts.Token).ConfigureAwait(false);
                     if (result.IsCompleted && result.Buffer.IsEmpty)
                     {
                         cts.Cancel();
@@ -309,10 +309,10 @@ namespace linker.tunnel.connection
         {
             if (callback == null) return false;
 
-            await slm.WaitAsync(cts.Token);
+            await slm.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                FlushResult result = await pipeSender.Writer.WriteAsync(data).ConfigureAwait(false);
+                FlushResult result = await pipeSender.Writer.WriteAsync(data, cts.Token).ConfigureAwait(false);
                 Interlocked.Add(ref sendRemaining, data.Length);
                 return true;
             }

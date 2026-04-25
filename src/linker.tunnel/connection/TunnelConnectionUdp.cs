@@ -68,9 +68,9 @@ namespace linker.tunnel.connection
         private readonly byte[] pingBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.ping");
         private readonly byte[] pongBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.pong");
         private readonly byte[] finBytes = Encoding.UTF8.GetBytes($"{Helper.GlobalString}.udp.fing");
+        private readonly byte[] encodeBuffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
         private readonly byte[] decodeBuffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
 
-        private Pipe pipeSender;
         public void BeginReceive(ITunnelConnectionReceiveCallback callback, object userToken)
         {
             if (this.callback != null) return;
@@ -86,7 +86,6 @@ namespace linker.tunnel.connection
             }
             if (Send)
             {
-                _ = Sender();
                 _ = ProcessHeart();
             }
         }
@@ -232,95 +231,26 @@ namespace linker.tunnel.connection
             data.Length.ToBytes(heartData.AsMemory());
             data.AsMemory().CopyTo(heartData.AsMemory(4));
 
-            await SendAsync(heartData.AsMemory(0, 4 + data.Length));
+            await SendAsync(heartData.AsMemory(0, 4 + data.Length)).ConfigureAwait(false);
 
             ArrayPool<byte>.Shared.Return(heartData);
-        }
-
-        private async Task Sender()
-        {
-            pipeSender = new Pipe(new PipeOptions(pauseWriterThreshold: maxRemaining, resumeWriterThreshold: (maxRemaining / 2), useSynchronizationContext: false));
-            byte[] readBuffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
-            byte[] encodeBuffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
-            try
-            {
-                while (cts.IsCancellationRequested == false)
-                {
-                    ReadResult result = await pipeSender.Reader.ReadAsync(cts.Token).ConfigureAwait(false);
-                    if (result.IsCompleted && result.Buffer.IsEmpty)
-                    {
-                        cts.Cancel();
-                        break;
-                    }
-
-                    ReadOnlySequence<byte> buffer = result.Buffer;
-                    SendBytes += buffer.Length;
-                    long offset = 0;
-
-                    do
-                    {
-                        //读取包长度
-                        int packetLength = 0;
-                        if (buffer.First.Length >= 4)
-                        {
-                            packetLength = buffer.First.ToInt32();
-                        }
-                        else
-                        {
-                            //长度标识跨段了
-                            buffer.Slice(0, 4).CopyTo(readBuffer);
-                            packetLength = readBuffer.ToInt32();
-                        }
-                        //数据量不够
-                        if (packetLength + 4 > buffer.Length) break;
-
-                        //复制一份
-                        ReadOnlySequence<byte> temp = buffer.Slice(4, packetLength);
-                        temp.CopyTo(readBuffer);
-
-                        if (SSL)
-                        {
-                            Crypto.TryEncode(readBuffer.AsSpan(0, packetLength), encodeBuffer, out int bytesWritten);
-                            await UdpClient.SendToAsync(encodeBuffer.AsMemory(0, bytesWritten), IPEndPoint, cts.Token).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await UdpClient.SendToAsync(readBuffer.AsMemory(0, packetLength), IPEndPoint, cts.Token).ConfigureAwait(false);
-                        }
-
-                        SendBytes += packetLength;
-                        Interlocked.Add(ref sendRemaining, -packetLength);
-
-                        //移动位置
-                        offset += 4 + packetLength;
-                        //去掉已处理部分
-                        buffer = buffer.Slice(4 + packetLength);
-
-                    } while (buffer.Length > 4);
-
-                    //告诉管道已经处理了多少数据，检查了多少数据
-                    pipeSender.Reader.AdvanceTo(result.Buffer.GetPosition(offset), result.Buffer.End);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (LoggerHelper.Instance.LoggerLevel <= LoggerTypes.DEBUG)
-                {
-                    LoggerHelper.Instance.Error(ex);
-                }
-                Dispose();
-            }
-            ArrayPool<byte>.Shared.Return(readBuffer);
         }
 
         private readonly SemaphoreSlim slm = new SemaphoreSlim(1);
         public async Task<bool> SendAsync(ReadOnlyMemory<byte> data)
         {
-            await slm.WaitAsync(cts.Token);
+            await slm.WaitAsync(cts.Token).ConfigureAwait(false);
             try
             {
-                await pipeSender.Writer.WriteAsync(data);
-                Interlocked.Add(ref sendRemaining, data.Length);
+                if (SSL)
+                {
+                    Crypto.TryEncode(data.Span.Slice(4), encodeBuffer, out int bytesWritten);
+                    await UdpClient.SendToAsync(encodeBuffer.AsMemory(0, bytesWritten), IPEndPoint, cts.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    await UdpClient.SendToAsync(data.Slice(4), IPEndPoint, cts.Token).ConfigureAwait(false);
+                }
                 return true;
             }
             catch (Exception ex)
@@ -363,9 +293,6 @@ namespace linker.tunnel.connection
                 userToken = null;
 
                 Crypto?.Dispose();
-
-                pipeSender?.Writer.Complete();
-                pipeSender?.Reader.Complete();
 
                 GC.Collect();
             });

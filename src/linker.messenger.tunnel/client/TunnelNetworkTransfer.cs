@@ -108,7 +108,6 @@ namespace linker.messenger.tunnel.client
         }
         private async Task GetNet()
         {
-
             if (operatingManager.StartOperation("get_net") == false)
             {
                 return;
@@ -116,7 +115,6 @@ namespace linker.messenger.tunnel.client
 
             await Task.Run(async () =>
             {
-
                 try
                 {
                     int isp = 0, city = 0, nat = 0;
@@ -124,18 +122,11 @@ namespace linker.messenger.tunnel.client
                     {
                         using CancellationTokenSource cts = new CancellationTokenSource(15000);
 
-                        int[] results = await Task.WhenAll([
-                            GetIsp(cts.Token, isp),
-                            GetPosition(cts.Token, city),
-                            GetNat(cts.Token, nat)
-                         ]).ConfigureAwait(false);
+                        int[] results = await Task.WhenAll([ GetIsp(cts.Token, isp), GetPosition(cts.Token, city),  GetNat(cts.Token, nat)]).ConfigureAwait(false);
                         isp += results[0];
                         city += results[1];
                         nat += results[2];
-                        if (isp > 0 && city > 0 && nat > 0)
-                        {
-                            break;
-                        }
+                        if (isp > 0 && city > 0 && nat > 0) break;
                         await Task.Delay(10000).ConfigureAwait(false);
                     }
                     await messengerSender.SendOnly(new MessageRequestWrap
