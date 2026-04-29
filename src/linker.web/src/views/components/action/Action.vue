@@ -55,7 +55,7 @@ export default {
                 Key: state.machineId,
                 Value: state.data
             }).then(() => {
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
             }).catch((err) => {
                 console.log(err);
                 ElMessage.error(t('common.operFail'));

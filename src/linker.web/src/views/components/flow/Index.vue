@@ -23,7 +23,7 @@
                         <span>{{ scope.row.receiveSpeedText }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="oper" :label="$t('status.flowOper')" width="70">
+                <el-table-column prop="oper" :label="$t('common.oper')" width="70">
                     <template #default="scope">
                         <el-button v-if="scope.row.detail" size="small" @click="handleShowDetail(scope.row.id)">{{$t('status.flowDetail')}}</el-button>
                     </template>

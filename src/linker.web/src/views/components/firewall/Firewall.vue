@@ -206,7 +206,7 @@ export default {
                 State:state.state
             }).then(()=>{
                 state.loading = false;
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
             }).catch((err)=>{
                 state.loading = false;
                 console.log(err);
@@ -214,7 +214,7 @@ export default {
             });
         }
         const handleDel = (row) => {
-            ElMessageBox.confirm(t('firewall.delConfirm'), t('common.confirm'), {
+            ElMessageBox.confirm(t('common.delSure',['']), t('common.confirm'), {
                 confirmButtonText: t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 type: 'warning',

@@ -249,7 +249,9 @@ export const provideDevices = () => {
 
         }
         list =  list.sort((a,b)=> b.Connected - a.Connected);    
-        list.splice(0,0,devices.page._list[0]);
+        if(devices.page._list.length > 0){
+            list.splice(0,0,devices.page._list[0]);
+        }
         devices.page.List = list;
     }
     const handleSort = () => {

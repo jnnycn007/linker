@@ -30,7 +30,7 @@ export const provideTuntap = () => {
                 subscribePing();
                 tuntap.value.hashcode = res.HashCode;
 
-                tuntap.value.networks = [{value:'-',label:'全部'}].concat(res.Network.Subs.map(c=>{
+                tuntap.value.networks = [{value:'-',label:'-'}].concat(res.Network.Subs.filter(c=>c.IP != '0.0.0.0').map(c=>{
                     return {
                         value:c.Name,
                         label:`${c.Name} : ${c.IP}/${c.PrefixLength}`

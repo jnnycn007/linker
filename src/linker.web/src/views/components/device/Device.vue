@@ -1,8 +1,8 @@
 <template>
-<el-table-column prop="MachineId" :label="$t('home.device')" width="196">
+<el-table-column prop="MachineId" :label="$t('device')" width="196">
     <template #header>
         <div class="flex">
-            <span>{{$t('home.device')}}</span>
+            <span>{{$t('device')}}</span>
             <span class="flex-1"> <el-input v-trim size="small" v-model="devices.page.Request.Name" clearable @input="handleRefresh" class="w-100" ></el-input> </span>
         </div>
     </template>

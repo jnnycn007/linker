@@ -1,5 +1,5 @@
 <template>
-   <div class="connect-point" @click="handleShow">
+   <div class="connect-point" @click="handleShow" v-if="row.isSelf == false">
         <span :class="`connect-point ${state.className}`" :title="state.title" v-loading="state.connecting"></span>
    </div>
 </template>
@@ -7,9 +7,11 @@
 <script>
 import {  computed, reactive } from 'vue';
 import { useConnections } from './connections';
+import { useI18n } from 'vue-i18n';
 export default {
     props: ['row','transactionId'],
     setup (props) {
+        const {t} = useI18n();
         const connections = useConnections();
         const connection = computed(()=>props.row.hook_connection?props.row.hook_connection[props.transactionId] || {} : {});
         const state = reactive({
@@ -21,7 +23,7 @@ export default {
                 return false;
             }),
             className:computed(()=>connection.value.Connected?['p2p','relay','node'][connection.value.Type]:'default'),
-            title:computed(()=>connection.value.Connected?['打洞直连','中继连接','节点连接'][connection.value.Type]:'未连接'),
+            title:computed(()=>connection.value.Connected?[t('network.tunnel.p2p'),t('network.tunnel.relay'),t('network.tunnel.node')][connection.value.Type]:t('common.unknow')),
         });
         const handleShow = () => {
             connections.value.device = props.row;

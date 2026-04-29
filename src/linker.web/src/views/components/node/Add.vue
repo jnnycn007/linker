@@ -65,7 +65,7 @@ export default {
 
                 const json = JSON.parse(JSON.stringify(state.ruleForm));
                 saveFn(json).then(()=>{
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                     state.show = false;
                     emit('success');
                 }).catch(()=>{

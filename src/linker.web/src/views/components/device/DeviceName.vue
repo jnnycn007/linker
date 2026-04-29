@@ -25,11 +25,13 @@ import {StarFilled,Hide} from '@element-plus/icons-vue'
 import { computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useDevice } from './devices';
+import { useI18n } from 'vue-i18n';
 export default {
     props:['item','config'],
     components:{StarFilled,Hide},
     setup (props) {
         
+        const {t} = useI18n();
         const devices = useDevice();
         
         const globalData = injectGlobalData();
@@ -39,12 +41,12 @@ export default {
             if(!props.config) return;
             if(machineId.value === props.item.MachineId){
                 if(!access.RenameSelf){
-                    ElMessage.success('无权限');
+                    ElMessage.success(t('common.access'));
                     return;
                 }
             }else{
                 if(!access.RenameOther){
-                    ElMessage.success('无权限');
+                    ElMessage.success(t('common.access'));
                     return;
                 }
             }

@@ -20,7 +20,6 @@ import { injectGlobalData } from '@/provide';
 import { computed, ref} from 'vue';
 import Background from './Background.vue';
 import Theme from './Theme.vue';
-import { LOCALE_OPTIONS } from '@/lang'
 import useLocale from '@/lang/provide'
 import Menu from './Menu.vue'
 import Locale from './Locale.vue'
@@ -30,8 +29,6 @@ export default {
 
         const globalData = injectGlobalData();
         
-
-        const localeOptions = ref(LOCALE_OPTIONS);
         const { changeLocale, currentLocale } = useLocale()
         const locale = computed({
             get() {
@@ -51,7 +48,7 @@ export default {
 
         return {
             globalData,
-            localeOptions,locale,handleLocale,refresh
+            locale,handleLocale,refresh
         }
     }
 }

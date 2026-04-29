@@ -96,7 +96,7 @@
                             <p>{{ scope.row.Delay }}ms</p>
                         </template>
                     </el-table-column> 
-                    <el-table-column  property="Manageable" :label="$t('server.relayOper')" width="110">
+                    <el-table-column  property="Manageable" :label="$t('common.oper')" width="110">
                         <template #default="scope">
                             <p>
                                 <AccessBoolean v-if="state.super" value="RemoveRelayNode,UpdateRelayNode,ShareRelayNode,RebootRelayNode">
@@ -194,7 +194,7 @@ export default {
                 Data:state.syncData
             }).then((res)=>{
                 state.showSync = false;
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
                 _getDefault();
             }).catch(()=>{
                 _getDefault();
@@ -213,7 +213,7 @@ export default {
                 type: 'warning',
             }).then(() => {
                 relayExit(row.NodeId).then(res => {
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 }).catch(()=>{
                     ElMessage.error(t('common.operFail'));
                 });
@@ -229,7 +229,7 @@ export default {
                 type: 'warning',
             }).then(() => {
                 relayUpgrade({Key:row.NodeId,Value:globalData.value.signin.Version}).then(res => {
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 }).catch(()=>{
                     ElMessage.error(t('common.operFail'));
                 });
@@ -245,7 +245,7 @@ export default {
                 type: 'warning',
             }).then(() => {
                 relayRemove(row.NodeId).then(res => {
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 }).catch(()=>{
                     ElMessage.error(t('common.operFail'));
                 });
@@ -263,7 +263,7 @@ export default {
                     if(res){
                         ElMessage.error(res);
                     }else{
-                        ElMessage.success(t('common.oper'));
+                        ElMessage.success(t('common.opered'));
                     }
                 }).catch(()=>{})
             }).catch(() => {

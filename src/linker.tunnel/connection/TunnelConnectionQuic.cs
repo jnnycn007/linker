@@ -13,6 +13,7 @@ namespace linker.tunnel.connection
     /// <summary>
     /// QUIC隧道
     /// </summary>
+#pragma warning disable CA2252 // 此 API 需要选择加入预览功能
     public sealed class TunnelConnectionQuic : ITunnelConnection
     {
         public TunnelConnectionQuic()
@@ -33,7 +34,7 @@ namespace linker.tunnel.connection
         public IPEndPoint IPEndPoint { get; init; }
         public bool SSL => true;
         public byte BufferSize { get; init; } = 3;
-#pragma warning disable CA2252 // 此 API 需要选择加入预览功能
+
         public bool Connected => Stream != null && Stream.CanWrite && LastTicks.HasValue();
         public int Delay { get; private set; }
         public long SendBytes { get; private set; }
@@ -54,8 +55,6 @@ namespace linker.tunnel.connection
         [JsonIgnore]
         public byte[] PacketBuffer { get; set; } = Helper.EmptyArray;
 
-
-#pragma warning disable CA2252 // 此 API 需要选择加入预览功能
         [JsonIgnore]
         public QuicStream Stream { get; init; }
         [JsonIgnore]

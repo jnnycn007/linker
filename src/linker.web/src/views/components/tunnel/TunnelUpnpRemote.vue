@@ -6,21 +6,21 @@
             <el-button size="small" type="danger" @click="handleDel()"><el-icon><DeleteFilled></DeleteFilled></el-icon> </el-button>
         </div>
         <el-table stripe  :data="state.list" border size="small" width="100%" height="60vh">
-            <el-table-column prop="DeviceType" label="类型" width="66" sortable>
+            <el-table-column prop="DeviceType" :label="$t('network.upnp.type')" width="80" sortable>
                 <template #default="scope">{{ deviceTypes[scope.row.DeviceType] }}</template>
             </el-table-column>
-            <el-table-column prop="PublicPort" label="外网端口" width="90" sortable></el-table-column>
-            <el-table-column prop="ClientIp" label="内网ip" width="100" sortable></el-table-column>
-            <el-table-column prop="PrivatePort" label="内网端口" width="90" sortable></el-table-column>
-            <el-table-column prop="ProtocolType" label="协议" width="66" sortable>
+            <el-table-column prop="PublicPort" :label="$t('network.upnp.pport')" width="120" sortable></el-table-column>
+            <el-table-column prop="ClientIp" :label="$t('network.upnp.ip')" width="100" sortable></el-table-column>
+            <el-table-column prop="PrivatePort" :label="$t('network.upnp.lport')" width="90" sortable></el-table-column>
+            <el-table-column prop="ProtocolType" :label="$t('network.upnp.proto')" width="100" sortable>
                 <template #default="scope">{{ protocolTypes[scope.row.ProtocolType] }}</template>
             </el-table-column>    
-            <el-table-column prop="LeaseDuration" label="存活" width="66" sortable>
+            <el-table-column prop="LeaseDuration" :label="$t('network.upnp.alive')" width="80" sortable>
                 <template #default="scope">
                     <span :class="{red:scope.row.LeaseDuration ==0,green:scope.row.LeaseDuration >0}">{{ scope.row.LeaseDuration }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="Description" label="描述" width="200"></el-table-column>
+            <el-table-column prop="Description" :label="$t('network.upnp.desc')" width="200"></el-table-column>
             <el-table-column property="Oper" label="" width="60" fixed="right">
                 <template #default="scope">
                     <el-button size="small" type="danger" @click="handleDel(scope.row)"><el-icon><DeleteFilled></DeleteFilled></el-icon> </el-button>
@@ -52,19 +52,19 @@ export default {
 
         const handleDel = (row) => { 
             if(row){
-                ElMessageBox.confirm(t('common.deleteText',[`[${row.PublicPort}:${props.protocolTypes[row.ProtocolType]}]`]), t('common.tips'), {
+                ElMessageBox.confirm(t('common.delSure',[`[${row.PublicPort}:${props.protocolTypes[row.ProtocolType]}]`]), t('common.tips'), {
                     confirmButtonText: t('common.confirm'),
                     cancelButtonText: t('common.cancel'),
                     type: 'warning'
                 }).then(() => { 
                     delUpnpMappingInfo(props.machineId,row.PublicPort,row.ProtocolType).then(res => { 
                         setTimeout(handleSearch,1000);
-                        ElMessage.success(t('common.oper'));
+                        ElMessage.success(t('common.opered'));
                     });
                 }).catch(() => { 
                 });
             }else{
-                ElMessageBox.confirm(t('common.deleteText',['所有失效的']), t('common.tips'), {
+                ElMessageBox.confirm(t('common.delSure',['所有失效的']), t('common.tips'), {
                     confirmButtonText: t('common.confirm'),
                     cancelButtonText: t('common.cancel'),
                     type: 'warning'
@@ -74,7 +74,7 @@ export default {
                     const fn = (index = 0) => {
                         if(index >= list.length){
                             setTimeout(handleSearch,1000);
-                            ElMessage.success(t('common.oper'));
+                            ElMessage.success(t('common.opered'));
                             return;
                         }
                         delUpnpMappingInfo(props.machineId,list[index].PublicPort,list[index].ProtocolType).then(res => { 

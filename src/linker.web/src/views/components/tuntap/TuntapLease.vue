@@ -1,8 +1,8 @@
 <template>
-     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" title="配置本组的网络" top="1vh" width="510">
+     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" :title="$t('tuntap.lease')" top="1vh" width="510">
         <div>
             <el-form ref="ruleFormRef" :model="state.ruleForm" :rules="state.rules" label-width="80">
-                <el-form-item label="网卡名" prop="Name">
+                <el-form-item :label="$t('tuntap.name')" prop="Name">
                     <el-row class="w-100">
                         <el-col :span="10">
                             <el-input v-trim v-model="state.ruleForm.Name" class="w-100"/>
@@ -20,7 +20,7 @@
                         <el-col :span="14"></el-col>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="MSS钳制" prop="MssFix">
+                <el-form-item :label="$t('tuntap.mss')" prop="MssFix">
                     <el-row class="w-100">
                         <el-col :span="10">
                             <el-select v-model="state.ruleForm.MssFix" class="w-100" :disabled="state.ruleForm.IP == '0.0.0.0'">
@@ -30,7 +30,7 @@
                         <el-col :span="14"></el-col>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="网络号" prop="IP">
+                <el-form-item :label="$t('tuntap.network')" prop="IP">
                     <el-row class="w-100">
                         <el-col :span="13">
                             <el-input v-trim v-model="state.ruleForm.IP" :disabled="state.disabled" @change="handlePrefixLengthChange" />
@@ -48,21 +48,21 @@
                 <el-form-item label="" prop="IP1">
                     <div class="w-100">
                         <el-descriptions :column="2" size="small" border title="">
-                            <el-descriptions-item label="网络号">{{ state.values.Network }}</el-descriptions-item>
-                            <el-descriptions-item label="网关">{{ state.values.Gateway }}</el-descriptions-item>
-                            <el-descriptions-item label="开始IP">{{ state.values.Start }}</el-descriptions-item>
-                            <el-descriptions-item label="结束IP">{{ state.values.End }}</el-descriptions-item>
-                            <el-descriptions-item label="广播号">{{ state.values.Broadcast }}</el-descriptions-item>
-                            <el-descriptions-item label="IP数量">{{ state.values.Count }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('tuntap.network')">{{ state.values.Network }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('tuntap.gateway')">{{ state.values.Gateway }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('common.start')">{{ state.values.Start }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('common.end')">{{ state.values.End }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('tuntap.broadcast')">{{ state.values.Broadcast }}</el-descriptions-item>
+                            <el-descriptions-item :label="$t('tuntap.ipCount')">{{ state.values.Count }}</el-descriptions-item>
                         </el-descriptions>
                     </div>
                 </el-form-item>
-                <el-form-item label="主子网隔离" prop="VlsmStatus">
+                <el-form-item :label="$t('tuntap.segment')" prop="VlsmStatus">
                     <el-select v-model="state.ruleForm.VlsmStatus" class="w-14" :disabled="state.ruleForm.IP == '0.0.0.0'">
                         <el-option :value="item.value" :label="item.label" v-for="(item,index) in state.vlsms"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="子网" prop="Subs">
+                <el-form-item :label="$t('tuntap.subnet')" prop="Subs">
                     <div class="subs">
                         <template v-for="(item,index) in state.ruleForm.Subs">
                             <el-row class="w-100 sub-item">
@@ -92,15 +92,15 @@
                 <AccessShow value="Lease">
                     <el-form-item label="" prop="Btns">
                         <div>
-                            <el-button @click="state.show = false">取消</el-button>
-                            <el-button type="primary" @click="handleSave">确认</el-button>
+                            <el-button @click="state.show = false">{{$t('common.cancel')}}</el-button>
+                            <el-button type="primary" @click="handleSave">{{$t('common.confirm')}}</el-button>
                         </div>
                     </el-form-item>
                 </AccessShow>
             </el-form>
         </div>
     </el-dialog>
-    <el-dialog v-model="state.showEdit" append-to=".app-wrap" title="选择子网" top="1vh" width="440">
+    <el-dialog v-model="state.showEdit" append-to=".app-wrap" :title="$t('tuntap.subnet')" top="1vh" width="440">
         <div>
             <div class="head t-c mgb-1">
                 <el-select  v-model="state.prefixLength" class="w-20 mgl-1" @change="handleSubChange" :disabled="state.disabled">
@@ -113,11 +113,11 @@
                         <el-tag>{{ scope.row.Start }}/{{ state.prefixLength }}</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column property="Start" label="开始"></el-table-column>
-                <el-table-column property="End" label="结束"></el-table-column>
-                <el-table-column property="Oper" label="操作" width="60">
+                <el-table-column property="Start" :label="$t('common.start')"></el-table-column>
+                <el-table-column property="End" :label="$t('common.end')"></el-table-column>
+                <el-table-column property="Oper" :label="$t('common.oper')" width="60">
                     <template #default="scope">
-                        <el-button size="small" v-if="scope.row.Disabled == false" @click="handleUseSub(scope.row)">选用</el-button>
+                        <el-button size="small" v-if="scope.row.Disabled == false" @click="handleUseSub(scope.row)">{{$t('common.use')}}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -135,12 +135,14 @@ import {getNetwork,addNetwork,calcNetwork, calcSubNetwork } from '@/apis/tuntap'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Delete, Plus,Refresh,Edit, MessageBox } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n';
 export default {
     props: ['modelValue'],
     emits: ['change','update:modelValue'],
     components: {Delete,Plus,Refresh,Edit},
     setup(props, { emit }) {
 
+        const {t} = useI18n();
         const ruleFormRef = ref(null);
         const state = reactive({
             show: true,
@@ -158,7 +160,7 @@ export default {
                 Name: {
                     type: 'string',
                     pattern: /^$|^[A-Za-z][A-Za-z0-9]{0,31}$/,
-                    message:'请输入正确的网卡名',
+                    message:t('tuntap.validate'),
                     transform(value) {
                         return value.trim();
                     },
@@ -166,26 +168,26 @@ export default {
             },
             values:{},
             vlsms:[
-                {value:1,label:'隔离'},
-                {value:2,label:'主->子单向'},
-                {value:4,label:'主<->子双向'},
+                {value:1,label:`${t('tuntap.master')} <-/->${t('tuntap.subnet')}`},
+                {value:2,label:`${t('tuntap.master')}  -->${t('tuntap.subnet')}`},
+                {value:4,label:`${t('tuntap.master')} <--> ${t('tuntap.subnet')}`},
             ],
             mtus:[
-                {value:1480,label:'使用1480'},
-                {value:1460,label:'使用1460'},
-                {value:1440,label:'使用1440'},
-                {value:1420,label:'使用1420'},
-                {value:1400,label:'使用1400'},
-                {value:1380,label:'使用1380'},
-                {value:1360,label:'使用1360'},
-                {value:1340,label:'使用1340'},
-                {value:1320,label:'使用1320'},
-                {value:1300,label:'使用1300'},
-                {value:1280,label:'使用1280'},
-                {value:1260,label:'使用1260'},
-                {value:1240,label:'使用1240'},
-                {value:1220,label:'使用1220'},
-                {value:1200,label:'使用1200'}
+                {value:1480,label:'1480'},
+                {value:1460,label:'1460'},
+                {value:1440,label:'1440'},
+                {value:1420,label:'1420'},
+                {value:1400,label:'1400'},
+                {value:1380,label:'1380'},
+                {value:1360,label:'1360'},
+                {value:1340,label:'1340'},
+                {value:1320,label:'1320'},
+                {value:1300,label:'1300'},
+                {value:1280,label:'1280'},
+                {value:1260,label:'1260'},
+                {value:1240,label:'1240'},
+                {value:1220,label:'1220'},
+                {value:1200,label:'1200'}
             ],
             msss:[
                 {value:0,label:''},
@@ -194,19 +196,19 @@ export default {
                 {value:3,label:''},
                 {value:4,label:''},
                 {value:5,label:''},
-                {value:6,label:'不启用'},
-                {value:7,label:'自动计算'},
-                {value:1400,label:'启用1400'},
-                {value:1380,label:'启用1380'},
-                {value:1360,label:'启用1360'},
-                {value:1340,label:'启用1340'},
-                {value:1320,label:'启用1320'},
-                {value:1300,label:'启用1300'},
-                {value:1280,label:'启用1280'},
-                {value:1260,label:'启用1260'},
-                {value:1240,label:'启用1240'},
-                {value:1220,label:'启用1220'},
-                {value:1200,label:'启用1200'}
+                {value:6,label:t('tuntap.unset')},
+                {value:7,label:t('tuntap.clamp')},
+                {value:1400,label:'1400'},
+                {value:1380,label:'1380'},
+                {value:1360,label:'1360'},
+                {value:1340,label:'1340'},
+                {value:1320,label:'1320'},
+                {value:1300,label:'1300'},
+                {value:1280,label:'1280'},
+                {value:1260,label:'1260'},
+                {value:1240,label:'1240'},
+                {value:1220,label:'1220'},
+                {value:1200,label:'1200'}
             ],
 
             showEdit: false,
@@ -214,7 +216,7 @@ export default {
             prefixLengths: Array.from({ length: 17 }, (_, i) => { 
                 return {
                     value:32-i,
-                    label:`/${32-i}、每段 : ${(1<<(32-(32-i)))}个IP`
+                    label:`/${32-i}、${(1<<(32-(32-i)))} IP`
                 } 
             }),
             prefixLength:29,
@@ -247,7 +249,7 @@ export default {
                 state.ruleForm.IP = res.IP;
                 state.ruleForm.PrefixLength = res.PrefixLength;
                 if(res.Subs.length == 0){
-                    res.Subs = [{Name:'子网1',IP:'0.0.0.0',PrefixLength:29}];
+                    res.Subs = [{Name:`${t('tuntap.subnet')}1`,IP:'0.0.0.0',PrefixLength:29}];
                 }else{
                     const sub = res.Subs.filter(c=>c.IP != '0.0.0.0')[0];
                     if(sub){
@@ -273,48 +275,38 @@ export default {
             const json = JSON.parse(JSON.stringify(state.ruleForm));
             json.Subs = json.Subs.filter(c=>c.IP != '0.0.0.0');
             addNetwork(state.ruleForm).then(()=>{
-                ElMessage.success('已操作');
+                ElMessage.success(t('common.opered'));
                 state.show = false;
             }).catch((err)=>{
                 console.log(err);
-                ElMessage.error('操作失败');
+                ElMessage.error(t('common.operFail'));
             })
         }
         const handleClear = ()=>{
-            ElMessageBox.confirm('确定要清空吗？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            ElMessageBox.confirm(t('common.clearSure',['']), t('common.tips'), {
+                confirmButtonText: t('common.confirm'),
+                cancelButtonText: t('common.cancel'),
                 type: 'warning'
             }).then(() => {
                 state.ruleForm.IP = '0.0.0.0';
                 state.ruleForm.PrefixLength = 24;
-                state.ruleForm.Subs = [{Name:'子网1',IP:'0.0.0.0',PrefixLength:29}];
+                state.ruleForm.Subs = [{Name:`${t('tuntap.subnet')}1`,IP:'0.0.0.0',PrefixLength:29}];
                 _calcNetwork();
             }).catch(() => {
             });
-        
-            /*
-            addNetwork({Name:'',IP:'0.0.0.0',PrefixLength:24,Subs:[]}).then(()=>{
-                ElMessage.success('已操作');
-                _getNetwork();
-            }).catch((err)=>{
-                console.log(err);
-                ElMessage.error('操作失败');
-            });
-            */
         }
 
         const handleAddSub = (index)=>{
-            state.ruleForm.Subs.splice(index+1,0,{Name:'子网'+(state.ruleForm.Subs.length+1),IP:'0.0.0.0',PrefixLength:29});
+            state.ruleForm.Subs.splice(index+1,0,{Name:t('tuntap.subnet')+(state.ruleForm.Subs.length+1),IP:'0.0.0.0',PrefixLength:29});
         }
         const handleDelSub = (index)=>{
             if(state.ruleForm.Subs.length <= 1){
-                state.ruleForm.Subs = [{Name:'子网1',IP:'0.0.0.0',PrefixLength:29}];
+                state.ruleForm.Subs = [{Name:`${t('tuntap.subnet')}1`,IP:'0.0.0.0',PrefixLength:29}];
                 return;
             }
-            ElMessageBox.confirm('确定要删除吗？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            ElMessageBox.confirm(t('common.operSure',['']), t('common.tips'), {
+                confirmButtonText: t('common.confirm'),
+                cancelButtonText: t('common.cancel'),
                 type: 'warning'
             }).then(() => {
                  state.ruleForm.Subs.splice(index,1);

@@ -1,5 +1,5 @@
 <template>
-    <el-table-column prop="forward" :label="$t('home.forwardPort')" width="80">
+    <el-table-column prop="forward" :label="$t('forward')" width="96">
         <template #default="scope">
             <template v-if="scope.row &&scope.row.hook_counter">
                 <AccessBoolean value="ForwardOther,ForwardSelf">
@@ -8,12 +8,12 @@
                             <div class="nowrap">
                                 <ConnectionShow :row="scope.row" transactionId="forward"></ConnectionShow>
                                 <a href="javascript:;" :class="{green:scope.row.hook_counter.forward>0}" @click="handleEdit(scope.row.MachineId,scope.row.MachineName,values)">
-                                    <span :class="{gateway:scope.row.hook_counter.forward>0}">{{$t('home.forwardPort')}}({{scope.row.hook_counter.forward>99 ? '99+' : scope.row.hook_counter.forward}})</span>
+                                    <span :class="{gateway:scope.row.hook_counter.forward>0}">{{$t('forward.port')}}({{scope.row.hook_counter.forward>99 ? '99+' : scope.row.hook_counter.forward}})</span>
                                 </a>
                             </div>
                             <div class="nowrap">
                                 <a href="javascript:;" :class="{green:scope.row.hook_counter.sforward>0}" @click="handleSEdit(scope.row.MachineId,scope.row.MachineName,values)">
-                                    <span :class="{gateway:scope.row.hook_counter.sforward>0 }">{{$t('home.forwardServer')}}({{scope.row.hook_counter.sforward>99 ? '99+' :scope.row.hook_counter.sforward}})</span>
+                                    <span :class="{gateway:scope.row.hook_counter.sforward>0 }">{{$t('forward.server')}}({{scope.row.hook_counter.sforward>99 ? '99+' :scope.row.hook_counter.sforward}})</span>
                                 </a>
                             </div>
                         </div>
@@ -41,11 +41,13 @@ import { useSforward } from './sforward';
 import { computed } from 'vue';
 import ConnectionShow from '../tunnel/ConnectionShow.vue';
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 export default {
     components:{ConnectionShow},
     setup() {
 
+        const {t} = useI18n();
         const forward = useForward()
         const sforward = useSforward()
         
@@ -55,12 +57,12 @@ export default {
         const handleEdit = (_machineId,_machineName,access)=>{
             if(machineId.value === _machineId){
                 if(!access.ForwardSelf){
-                    ElMessage.success('无权限');
+                    ElMessage.success(t('common.access'));  
                     return;
                 }
             }else{
                 if(!access.ForwardOther){
-                    ElMessage.success('无权限');
+                    ElMessage.success(t('common.access'));
                     return;
                 }
             }
@@ -71,12 +73,12 @@ export default {
         const handleSEdit = (_machineId,_machineName,access)=>{
             if(machineId.value === _machineId){
                 if(!access.ForwardSelf){
-                ElMessage.success('无权限');
+                ElMessage.success(t('common.access'));
                 return;
             }
             }else{
                 if(!access.ForwardOther){
-                ElMessage.success('无权限');
+                ElMessage.success(t('common.access'));
                 return;
             }
             }

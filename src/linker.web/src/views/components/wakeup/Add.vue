@@ -187,7 +187,7 @@ export default {
                     }
                 };
                 addWakeup(json).then(()=>{
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                     state.show = false;
                     emit('success');
                 }).catch(()=>{

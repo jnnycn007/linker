@@ -3,27 +3,27 @@
         <div class="head pdb-6 t-c">
             <el-input size="small" v-model="state.name" @change="handleSearch" clearable class="w-10 mgr-1"></el-input>
             <el-button size="small" :loading="state.loading" @click="handleSearch"><el-icon><Search></Search></el-icon> </el-button>
-            <el-button size="small" type="primary" :loading="state.loading" @click="handleAdd">添加</el-button>
+            <el-button size="small" type="primary" :loading="state.loading" @click="handleAdd"><el-icon><Plus></Plus></el-icon></el-button>
         </div>
         <el-table stripe  :data="state.list" border size="small" width="100%" height="60vh">
-            <el-table-column prop="DeviceType" label="类型" width="66" sortable>
+            <el-table-column prop="DeviceType" :label="$t('network.upnp.type')" width="80" sortable>
                 <template #default="scope">{{ deviceTypes[scope.row.DeviceType] }}</template>
             </el-table-column>
-            <el-table-column prop="PublicPort" label="外网端口" width="90" sortable></el-table-column>
-            <el-table-column prop="ClientIp" label="内网ip" width="100" sortable></el-table-column>
-            <el-table-column prop="PrivatePort" label="内网端口" width="90" sortable></el-table-column>
-            <el-table-column prop="ProtocolType" label="协议" width="66" sortable>
+            <el-table-column prop="PublicPort" :label="$t('network.upnp.pport')" width="110" sortable></el-table-column>
+            <el-table-column prop="ClientIp" :label="$t('network.upnp.ip')" width="100" sortable></el-table-column>
+            <el-table-column prop="PrivatePort" :label="$t('network.upnp.lport')" width="90" sortable></el-table-column>
+            <el-table-column prop="ProtocolType" :label="$t('network.upnp.proto')" width="100" sortable>
                 <template #default="scope">{{ protocolTypes[scope.row.ProtocolType] }}</template>
             </el-table-column>    
-            <el-table-column prop="LeaseDuration" label="存活" width="66" sortable></el-table-column>
-            <el-table-column property="Disabled" label="启用" width="66" sortable>
+            <el-table-column prop="LeaseDuration" :label="$t('network.upnp.alive')" width="80" sortable></el-table-column>
+            <el-table-column prop="Enabled" :label="$t('network.upnp.enabled')" width="90" sortable>
                 <template #default="scope">
                     <el-switch :disabled="scope.row.Deletable==false" v-model="scope.row.Enabled" @change="handleEnabledChange(scope.row)" />
                 </template>
             </el-table-column>
-            <el-table-column prop="Description" label="描述" width="200"></el-table-column>
+            <el-table-column prop="Description" :label="$t('network.upnp.desc')" width="200"></el-table-column>
            
-            <el-table-column property="Oper" label="" width="60" fixed="right">
+            <el-table-column prop="Oper" label="" width="60" fixed="right">
                 <template #default="scope">
                     <el-button size="small" type="danger" v-if="scope.row.Deletable" @click="handleDel(scope.row)"><el-icon><DeleteFilled></DeleteFilled></el-icon> </el-button>
                 </template>
@@ -36,7 +36,7 @@
 <script>
 import {  onMounted, onUnmounted, provide, reactive, ref } from 'vue';
 import { addUpnpMappingInfo, delUpnpMappingInfo, getUpnpMappingLocalInfo } from '@/apis/tunnel';
-import {DeleteFilled,Search} from '@element-plus/icons-vue'
+import {DeleteFilled,Search,Plus} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import TunnelUpnpLocalAdd from './TunnelUpnpLocalAdd.vue';
@@ -44,7 +44,7 @@ import TunnelUpnpLocalAdd from './TunnelUpnpLocalAdd.vue';
 export default {
     props: ['modelValue','deviceTypes','protocolTypes','machineId'],
     emits: ['update:modelValue'],
-    components: { DeleteFilled,Search,TunnelUpnpLocalAdd },
+    components: { DeleteFilled,Search,Plus,TunnelUpnpLocalAdd },
     setup(props, { emit }) {
 
         const { t } = useI18n();
@@ -57,14 +57,14 @@ export default {
         });
 
         const handleDel = (row) => { 
-            ElMessageBox.confirm(t('common.deleteText',[`[${row.PublicPort}:${props.protocolTypes[row.ProtocolType]}]`]), t('common.tips'), {
+            ElMessageBox.confirm(t('common.delSure',[`[${row.PublicPort}:${props.protocolTypes[row.ProtocolType]}]`]), t('common.tips'), {
                 confirmButtonText: t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 type: 'warning'
             }).then(() => { 
                 delUpnpMappingInfo(props.machineId,row.PublicPort,row.ProtocolType).then(res => { 
                     setTimeout(handleSearch,1000);
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 });
             }).catch(() => { 
             });
@@ -128,7 +128,7 @@ export default {
             delUpnpMappingInfo(props.machineId,row.PublicPort,row.ProtocolType).then(res => { 
                 addUpnpMappingInfo(props.machineId,row).then(res=>{
                     setTimeout(handleSearch,1000);
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 });
             }); 
         }

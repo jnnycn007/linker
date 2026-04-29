@@ -1,14 +1,14 @@
 <template>
-    <el-table-column prop="tuntap" :label="$t('home.tuntap')" width="160">
+    <el-table-column prop="tuntap" :label="$t('tuntap')" width="160">
         <template #header>
             <div class="flex">
-                    <a href="javascript:;" class="a-line" @click="handleShowLease">{{$t('home.tuntap')}}</a>
-                    <span class="w-1"></span>
-                    <el-select size="small" class="flex-1" v-model="tuntap.network" @change="handleChange">
-                        <template v-for="item in tuntap.networks">
-                            <el-option :value="item.value" :label="item.label"></el-option>
-                        </template>
-                    </el-select>
+                <a href="javascript:;" class="a-line" @click="handleShowLease">{{$t('tuntap')}}</a>
+                <span class="w-1"></span>
+                <el-select size="small" class="flex-1" v-model="tuntap.network" @change="handleChange">
+                    <template v-for="item in tuntap.networks">
+                        <el-option :value="item.value" :label="item.label"></el-option>
+                    </template>
+                </el-select>
             </div>
         </template>
         <template #default="scope">

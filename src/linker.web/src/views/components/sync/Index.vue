@@ -5,10 +5,10 @@
                 <slot>
                     <el-button class="btn" size="small" @click="handleShowSync(values)"><el-icon><Share /></el-icon></el-button>
                 </slot>
-                <el-dialog class="options-center" :title="$t('server.sync')" destroy-on-close v-model="state.showNames" width="54rem" top="2vh">
+                <el-dialog class="options-center" :title="$t('common.sync')" destroy-on-close v-model="state.showNames" width="54rem" top="2vh">
                     <div>
                         <div class="t-c">
-                            {{ `${$t('server.sync')}【${$t(`server.async${state.name}`)}】${$t('server.asyncText')}` }}
+                            {{ `${$t('common.sync')}【${$t(`async.${state.name}`)}】${$t('sync.alert')}` }}
                         </div>
                         <el-transfer class="src-tranfer mgt-1"
                             v-model="state.srcIdValues"
@@ -59,7 +59,7 @@ export default {
                 names:[props.name],
                 ids:state.srcIdValues
             }).then(res => {
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
                 state.showNames = false;
             });
         }

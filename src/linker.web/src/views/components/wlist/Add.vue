@@ -182,7 +182,7 @@ export default {
                 json.UseTime = `${moment(state.timeRange[0]).format('YYYY-MM-DD')} 00:00:00`;
                 json.EndTime = `${moment(state.timeRange[1]).format('YYYY-MM-DD')} 23:59:59`;
                 wlistAdd(json).then(()=>{
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                     state.show = false;
                     emit('success');
                 }).catch(()=>{

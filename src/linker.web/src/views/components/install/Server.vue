@@ -1,17 +1,17 @@
 <template>
     <div>
-        <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="12rem">
+        <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="14rem">
             <el-form-item label="" label-width="0">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="服务端口" prop="servicePort">
+                        <el-form-item :label="$t('install.servicePort')" prop="servicePort">
                             <el-input v-trim v-model="state.form.servicePort" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-col :span="12">
-                            <el-form-item label="匿名登录" prop="anonymous">
-                                <el-checkbox v-model="state.form.anonymous">匿名登录</el-checkbox>
+                            <el-form-item :label="$t('install.anonymous')" prop="anonymous">
+                                <el-checkbox v-model="state.form.anonymous">{{$t('install.anonymous')}}</el-checkbox>
                             </el-form-item>
                         </el-col>
                     </el-col>
@@ -20,12 +20,12 @@
             <el-form-item label="" label-width="0">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="管理密钥" prop="superKey">
+                        <el-form-item :label="$t('install.superKey')" prop="superKey">
                             <el-input v-trim v-model="state.form.superKey" type="password" show-password maxlength="36" show-word-limit />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="管理密码" prop="superPassword">
+                        <el-form-item :label="$t('install.superPwd')" prop="superPassword">
                             <el-input v-trim v-model="state.form.superPassword" type="password" show-password maxlength="36" show-word-limit />
                         </el-form-item>
                     </el-col>
@@ -37,9 +37,11 @@
 <script>
 import { injectGlobalData } from '@/provide';
 import { reactive,  ref, inject, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 export default {
     setup(props) {
 
+        const {t} = useI18n();
         const step = inject('step');
         const globalData = injectGlobalData();
         const state = reactive({
@@ -53,15 +55,15 @@ export default {
                 TunnelPorts:step.value.form.server.TunnelPorts ||globalData.value.config.Server.SForward.TunnelPorts,
             },
             rules: {
-                superKey: [{ required: true, message: "必填", trigger: "blur" }],
-                superPassword: [{ required: true, message: "必填", trigger: "blur" }],
+                superKey: [{ required: true, message: t('install.required'), trigger: "blur" }],
+                superPassword: [{ required: true, message: t('install.required'), trigger: "blur" }],
                 servicePort: [
-                    { required: true, message: "必填", trigger: "blur" },
+                    { required: true, message: t('install.required'), trigger: "blur" },
                     {
                         type: "number",
                         min: 0,
                         max: 65535,
-                        message: "数字 0-65535",
+                        message: "0-65535",
                         trigger: "blur",
                         transform(value) {
                             return Number(value);
@@ -69,12 +71,12 @@ export default {
                     },
                 ],
                 webPort: [
-                    { required: true, message: "必填", trigger: "blur" },
+                    { required: true, message: t('install.required'), trigger: "blur" },
                     {
                         type: "number",
                         min: 0,
                         max: 65535,
-                        message: "数字 0-65535",
+                        message: "0-65535",
                         trigger: "blur",
                         transform(value) {
                             return Number(value);

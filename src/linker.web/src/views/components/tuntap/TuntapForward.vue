@@ -1,12 +1,12 @@
 <template>
     <div class="w-100">
         <div>
-            <span class="yellow">使用系统端口转发</span>
+            <span class="yellow">{{$t('tuntap.forward.alert')}}</span>
             <span class="green" v-if="state.testing">、testing</span>
         </div>
         <div class="wrap">
             <el-table stripe  :data="state.forwards" border size="small" width="100%" height="400px" @cell-dblclick="handleCellClick">
-                <el-table-column prop="ListenPort" label="源端口" width="80">
+                <el-table-column prop="ListenPort" :label="$t('tuntap.forward.srcPort')" width="80">
                     <template #default="scope">
                         <template v-if="scope.row.ListenPortEditing">
                             <el-input v-trim autofocus size="small" v-model="scope.row.ListenPort"
@@ -20,7 +20,7 @@
                         </template>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ConnectAddr" label="目标IP" width="140">
+                <el-table-column prop="ConnectAddr" :label="$t('tuntap.forward.dstIp')" width="140">
                     <template #default="scope">
                         <template v-if="scope.row.ConnectAddrEditing">
                             <el-input v-trim autofocus size="small" v-model="scope.row.ConnectAddr"
@@ -34,7 +34,7 @@
                         </template>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ConnectPort" label="目标端口" width="80">
+                <el-table-column prop="ConnectPort" :label="$t('tuntap.forward.dstPort')" width="80">
                     <template #default="scope">
                         <template v-if="scope.row.ConnectPortEditing">
                             <el-input v-trim autofocus size="small" v-model="scope.row.ConnectPort"
@@ -48,7 +48,7 @@
                         </template>
                     </template>
                 </el-table-column>
-                <el-table-column prop="Remark" label="备注">
+                <el-table-column prop="Remark" :label="$t('tuntap.forward.remark')">
                     <template #default="scope">
                         <template v-if="scope.row.RemarkEditing">
                             <el-input v-trim autofocus size="small" v-model="scope.row.Remark"
@@ -56,15 +56,15 @@
                         </template>
                         <template v-else>
                             <div class="remark">
-                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'Remark')">{{ scope.row.Remark || '无' }}</a>
+                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'Remark')">{{ scope.row.Remark || $t('common.unknow') }}</a>
                             </div>
                         </template>
                     </template>
                 </el-table-column>
-                <el-table-column prop="Oper" label="操作" width="110">
+                <el-table-column prop="Oper" :label="$t('common.oper')" width="110">
                     <template #default="scope">
                         <div>
-                            <el-popconfirm title="删除不可逆，是否确认?" @confirm="handleDel(scope.$index)">
+                            <el-popconfirm :title="$t('common.delSure',[''])" @confirm="handleDel(scope.$index)">
                                 <template #reference>
                                     <el-button type="danger" size="small">
                                         <el-icon><Delete /></el-icon>

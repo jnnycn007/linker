@@ -1,20 +1,18 @@
 <template>
     <div class="t-c">
-        <el-checkbox v-model="state.form.client" label="作为客户端" />
+        <el-checkbox v-model="state.form.client" :label="$t('install.client')" />
         <PcShow>
-            <el-checkbox v-model="state.form.server" label="作为服务端"/>
+            <el-checkbox v-model="state.form.server" :label="$t('install.server')"/>
         </PcShow>
     </div>
 </template>
 
 <script>
 import {inject, reactive} from 'vue'
-import {ElMessage} from 'element-plus'
 import { injectGlobalData } from '@/provide';
 export default {
     name: 'Common',
     setup () {
-        
         const globalData = injectGlobalData();
         const step = inject('step');
         const state =  reactive({
@@ -26,7 +24,6 @@ export default {
         const handleValidate = (prevJson) => {
             return new Promise((resolve, reject) => {
                 if(!state.form.client && !state.form.server){
-                    ElMessage.error('请选择客户端或服务端');
                     reject();
                 }else{
                     resolve({

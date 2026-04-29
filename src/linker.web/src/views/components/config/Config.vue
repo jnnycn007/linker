@@ -3,49 +3,49 @@
         <el-card shadow="never" class="h-100 flex flex-column flex-nowrap">
             <template #header>
                 <div class="flex">
-                    <span>{{$t('server.messenger')}}</span>
+                    <span>{{$t('messenger')}}</span>
                     <span class="flex-1"></span>
                     <Export></Export>
                 </div>
             </template>
             <div class="absolute scrollbar">
                 <el-form label-width="auto" :label-position="state.position">
-                    <el-form-item :label="$t('server.messengerAddr')">
+                    <el-form-item :label="$t('messenger.addr')">
                         <div class="flex">
                             <el-input v-trim :class="{success:state.list.Host==state.signinHost}" class="w-20" v-model="state.list.Host" @blur="handleSave" />
                             <span class="mgl-1"></span>
                             <Sync name="SignInServer"></Sync>
                             <PcShow>
-                                <span class="mgl-1">{{$t('server.messengerText')}}</span>
+                                <span class="mgl-1">{{$t('messenger.alert')}}</span>
                             </PcShow>
                         </div>
                     </el-form-item>
-                    <el-form-item :label="`${$t('server.messengerAddr')}1`">
+                    <el-form-item :label="`${$t('messenger.addr')}1`">
                         <div class="flex">
                             <el-input v-trim :class="{success:state.list.Host1==state.signinHost}" class="w-20" v-model="state.list.Host1" @blur="handleSave" />
                         </div>
                     </el-form-item>
                     <el-form-item></el-form-item>
-                    <el-form-item :label="$t('server.messengerSuperKey')">
+                    <el-form-item :label="$t('messenger.super.key')">
                         <div class="flex">
                             <el-input v-trim :class="{success:state.super,error:state.super==false}" class="w-20" type="password" show-password maxlength="36" v-model="state.list.SuperKey" @blur="handleSave" />
                             <span class="mgl-1"></span>
                             <Sync name="SignInSuperKey"></Sync>
                         </div>
                     </el-form-item>
-                    <el-form-item :label="$t('server.messengerSuperPassword')">
+                    <el-form-item :label="$t('messenger.super.password')">
                         <div class="flex">
                             <el-input v-trim :class="{success:state.super,error:state.super==false}" class="w-20" type="password" show-password maxlength="36" v-model="state.list.SuperPassword" @blur="handleSave" />
                         </div>
                     </el-form-item>
                     <el-form-item></el-form-item>   
-                    <el-form-item :label="$t('server.messengerUserId')">
+                    <el-form-item :label="$t('messenger.userid')">
                         <div class="flex">
                             <el-input v-trim class="w-20" type="password" show-password maxlength="36" v-model="state.list.UserId" @blur="handleSave" />
                             <span class="mgl-1"></span>
                             <Sync name="SignInUserId"></Sync>
                             <PcShow>
-                                <span class="mgl-1">{{$t('server.messengerUserIdText')}}</span>
+                                <span class="mgl-1">{{$t('messenger.userid.alert')}}</span>
                             </PcShow>
                         </div>
                     </el-form-item>
@@ -68,12 +68,12 @@ import { checkSignInKey, setSignInServers } from '@/apis/signin';
 import { injectGlobalData } from '@/provide';
 import { ElMessage } from 'element-plus';
 import { computed, onMounted, reactive } from 'vue'
-import Updater from '../../../components/updater/Config.vue';
-import RelayServers from '../../../components/relay/Config.vue';
-import SForwardServers from '../../../components/forward/Config.vue';
+import Updater from '../updater/Config.vue';
+import RelayServers from '../relay/Config.vue';
+import SForwardServers from '../forward/Config.vue';
 import { useI18n } from 'vue-i18n';
-import Sync from '../../../components/sync/Index.vue'
-import WhiteList from '../../../components/wlist/Index.vue';
+import Sync from '../sync/Index.vue'
+import WhiteList from '../wlist/Index.vue';
 import Export from './Export.vue';
 export default {
     components:{Updater,RelayServers,SForwardServers,Sync,WhiteList,Export},
@@ -89,7 +89,7 @@ export default {
 
         const handleSave = ()=>{
             setSignInServers(state.list).then(()=>{
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
             }).catch((err)=>{
                 console.log(err);
                 ElMessage.error(t('common.operFail'));

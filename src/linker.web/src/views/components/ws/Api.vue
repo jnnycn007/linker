@@ -1,19 +1,19 @@
 <template>
-    <el-dialog class="options-center" title="管理接口" destroy-on-close v-model="showPort" center :show-close="false" :close-on-click-modal="false" align-center width="200">
+    <el-dialog class="options-center" :title="$t('api.title')" destroy-on-close v-model="showPort" center :show-close="false" :close-on-click-modal="false" align-center width="300">
         <div class="port-wrap t-c">
             <el-form ref="ruleFormRef" :model="state.ruleForm" :rules="state.rules" label-width="auto">
-                <el-form-item label="接口" prop="ws">
+                <el-form-item :label="$t('api.api')" prop="ws">
                     <el-input v-trim v-model="state.api" @keyup.enter="handleConnectReload"></el-input>
                 </el-form-item>
-                <el-form-item label="秘钥" prop="ps">
+                <el-form-item :label="$t('api.pwd')" prop="ps">
                     <el-input v-trim show-password type="password" v-model="state.psd" @keyup.enter="handleConnectReload"></el-input>
                 </el-form-item>
-                <el-form-item label="保存" prop="save">
-                    <el-checkbox v-model="state.save" >保存密码</el-checkbox>
+                <el-form-item :label="$t('api.remember',[''])" prop="save">
+                    <el-checkbox v-model="state.save" >{{$t('api.remember',[$t('api.pwd')])}}</el-checkbox>
                 </el-form-item>
                 <el-form-item label="" prop="Btns">
                     <div class="t-c w-100">
-                        <el-button type="success" @click="handleConnectReload" plain>确 定</el-button>
+                        <el-button type="success" @click="handleConnectReload" plain>{{$t('common.confirm')}}</el-button>
                     </div>
                 </el-form-item>
             </el-form>
@@ -23,7 +23,7 @@
 <script>
 import {useRoute,useRouter} from 'vue-router'
 import {injectGlobalData} from '@/provide'
-import { computed, nextTick, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { initWebsocket, subWebsocketState,closeWebsocket } from '@/apis/request'
 import { getSignInfo } from '@/apis/signin'
 import { getConfig } from '@/apis/config'

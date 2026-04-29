@@ -91,7 +91,7 @@ export default {
 
                 relayUpdate(json).then((res)=>{
                     if(res){
-                        ElMessage.success(t('common.oper'));
+                        ElMessage.success(t('common.opered'));
                         state.show = false;
                         emit('success');
                     }else{

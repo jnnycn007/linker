@@ -5,7 +5,7 @@
         </div>
         <el-table :data="state.request.List" stripe border size="small" width="100%">
             <el-table-column prop="Addr" label="IP"></el-table-column>
-            <el-table-column prop="Oper" :label="$t('server.denyOper')" width="60">
+            <el-table-column prop="Oper" :label="$t('common.oper')" width="60">
                 <template #default="scope">
                     <el-button type="danger" size="small" @click="handleDeny(scope.row)">
                         <el-icon><Remove /></el-icon>

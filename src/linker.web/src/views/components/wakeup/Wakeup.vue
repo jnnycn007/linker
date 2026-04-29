@@ -58,7 +58,7 @@
                                 <a href="javascript:void(0);" class="a-line mgr-1" @click="handleAdd(scope.row)">{{$t('wakeup.edit')}}</a>
                                 <el-popconfirm 
                                 :confirm-button-text="$t('common.confirm')" :cancel-button-text="$t('common.cancel')"
-                                    :title="$t('wakeup.delConfirm')" @confirm="handleDel(scope.row)">
+                                    :title="$t('common.delSure',[''])" @confirm="handleDel(scope.row)">
                                     <template #reference>
                                         <a href="javascript:void(0);" class="a-line">{{$t('wakeup.del')}}</a>
                                     </template>
@@ -161,7 +161,7 @@ export default {
                     Ms:ms
                 }
             }).then(res => {
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
                 state.showSwitch = false;
             }).catch(() => {ElMessage.success(t('common.operFail'));});
         }

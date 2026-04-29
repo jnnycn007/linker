@@ -45,7 +45,7 @@ import Install from './install/Index.vue'
 import { computed} from 'vue';
 import Adv from '../../components/adv/Index.vue'
 import { injectGlobalData } from '@/provide';
-import NoPermission from '../../NoPermission.vue';
+import NoPermission from '../../components/ws/NoPermission.vue';
 export default {
     name: 'Index',
     components: {Head, Status, Install,Adv,NoPermission},
@@ -69,7 +69,7 @@ export default {
     box-sizing:border-box;
     background-color:#fff;
     border:1px solid #ccc;
-    width:81rem;
+    width:82rem;
     max-width : 98%;
     height:90%;
     position:absolute;

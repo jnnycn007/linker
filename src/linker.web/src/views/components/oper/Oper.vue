@@ -1,7 +1,7 @@
 <template>
     <AccessBoolean value="Access">
         <template #default="{values}">
-            <el-table-column :label="$t('home.oper')"  fixed="right" min-width="110">
+            <el-table-column :label="$t('common.oper')"  fixed="right" min-width="110">
                 <template #default="scope">
                     <div>
                         <div class="numbers">
@@ -36,7 +36,7 @@
                                                     <FlowOper :item="scope.row"></FlowOper>
                                                 </template>
                                                 <AccessShow value="Remove">
-                                                    <el-dropdown-item v-if="scope.row.showDel" @click="handleDel(scope.row)"><el-icon><Delete /></el-icon> {{$t('home.delete')}}</el-dropdown-item>
+                                                    <el-dropdown-item v-if="scope.row.showDel" @click="handleDel(scope.row)"><el-icon><Delete /></el-icon> {{$t('common.del')}}</el-dropdown-item>
                                                 </AccessShow>
                                             </el-dropdown-menu>
                                         </template>
@@ -81,7 +81,7 @@ export default {
         const devices = useDevice();
         
         const handleDel = (row)=>{
-            ElMessageBox.confirm(t('home.deleteSure',[row.MachineName]), t('common.tips'), {
+            ElMessageBox.confirm(t('common.delSure',[row.MachineName]), t('common.tips'), {
                 confirmButtonText: t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 type: 'warning',
@@ -93,7 +93,7 @@ export default {
         }
         
          const handleExit = (row)=>{
-            ElMessageBox.confirm(t('home.closeSure',[row.MachineName]), t('common.tips'), {
+            ElMessageBox.confirm(t('common.closeSure',[row.MachineName]), t('common.tips'), {
                 confirmButtonText: t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 type: 'warning',
@@ -128,10 +128,10 @@ export default {
                 confirmButtonText:  t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 inputPattern:/^[0-9a-zA-Z]{1,32}$/,
-                inputErrorMessage: '数字字母1-32位',
+                inputErrorMessage: '1-32',
             }).then(({ value }) => {
                 setApiPassword({machineId:row.MachineId,password:value}).then(()=>{
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                 }).catch(()=>{
                     ElMessage.error(t('common.operFail'));
                 })

@@ -6,7 +6,7 @@
     </div>
 </template>
 <script>
-import Config from './Config.vue';
+import Config from '../../../components/config/Config.vue';
 export default {
     components:{Config},
     setup(props) {

@@ -10,7 +10,7 @@
 <script>
 import { computed} from 'vue';
 import { provideGlobalData } from './provide';
-import Api from './views/Api.vue';
+import Api from './views/components/ws/Api.vue';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import en from 'element-plus/dist/locale/en.mjs'
 import useLocale from './lang/provide';

@@ -171,7 +171,7 @@ export default {
                 const json = JSON.parse(JSON.stringify(state.ruleForm));
                 json.Data.Protocol = state.protocolChecks.reduce((a,b)=>a|b,0);
                 addFirewall(json).then(()=>{
-                    ElMessage.success(t('common.oper'));
+                    ElMessage.success(t('common.opered'));
                     state.show = false;
                     emit('success');
                 }).catch(()=>{

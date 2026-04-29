@@ -2,36 +2,36 @@
      <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" title="UPNP" width="360" top="2vh">
         <div>
             <el-form ref="ruleFormRef" :model="state.ruleForm" :rules="state.rules" label-width="auto">
-                <el-form-item label="设备类型" prop="DeviceType">
-                    <el-select v-model="state.ruleForm.DeviceType" placeholder="请选择">
+                <el-form-item :label="$t('network.upnp.type')" prop="DeviceType">
+                    <el-select v-model="state.ruleForm.DeviceType">
                         <el-option v-for="(item,key) in deviceTypes" :key="Number(key)" :label="item" :value="Number(key)"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="协议" prop="ProtocolType">
-                    <el-select v-model="state.ruleForm.ProtocolType" placeholder="请选择">
+                <el-form-item :label="$t('network.upnp.proto')" prop="ProtocolType">
+                    <el-select v-model="state.ruleForm.ProtocolType">
                         <el-option v-for="(item,key) in protocolTypes" :key="Number(key)" :label="item" :value="Number(key)"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="外网端口" prop="PublicPort">
+                <el-form-item :label="$t('network.upnp.pport')" prop="PublicPort">
                     <el-input-number v-model="state.ruleForm.PublicPort" />
                 </el-form-item>
-                <el-form-item label="外网端口" prop="PrivatePort">
+                <el-form-item :label="$t('network.upnp.lport')" prop="PrivatePort">
                     <el-input-number v-model="state.ruleForm.PrivatePort" />
                 </el-form-item>
-                <el-form-item label="存活时间" prop="LeaseDuration">
+                <el-form-item :label="$t('network.upnp.alive')" prop="LeaseDuration">
                     <el-input-number v-model="state.ruleForm.LeaseDuration" />
                 </el-form-item>
-                <el-form-item label="描述" prop="Description">
+                <el-form-item :label="$t('network.upnp.desc')" prop="Description">
                     <el-input v-model="state.ruleForm.Description" :maxlength="32" show-word-limit clearable />
                 </el-form-item>
-                <el-form-item label="启用" prop="Enabled">
+                <el-form-item :label="$t('network.upnp.enabled')" prop="Enabled">
                     <el-switch v-model="state.ruleForm.Enabled" />
                 </el-form-item>
                 
                 <el-form-item label="" prop="Btns">
                     <div class="t-c w-100">
-                        <el-button @click="state.show = false">取消</el-button>
-                        <el-button type="primary" @click="handleSave">确认</el-button>
+                        <el-button @click="state.show = false">{{$t('common.cancel')}}</el-button>
+                        <el-button type="primary" @click="handleSave">{{$t('common.confirm')}}</el-button>
                     </div>
                 </el-form-item>
             </el-form>
@@ -42,12 +42,14 @@
 import { addUpnpMappingInfo, delUpnpMappingInfo } from '@/apis/tunnel';
 import { ElMessage } from 'element-plus';
 import { inject, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export default {
     props: ['modelValue','deviceTypes','protocolTypes','machineId'],
     emits: ['change','update:modelValue'],
     setup(props, { emit }) {
 
+        const { t } = useI18n();
         const ruleFormRef = ref(null);
         const addState = inject('addState');  
         const deletePort = addState.value.PublicPort || 0;
@@ -67,16 +69,16 @@ export default {
             },
             rules: {
                 PublicPort: [
-                    { required: true, message: '请输入外网端口', trigger: 'blur' },
-                    { type: 'number',min: 1, max: 65535, message: '请输入数字1-65535', trigger: ['blur', 'change'] },
+                    { required: true, message: t('common.required'), trigger: 'blur' },
+                    { type: 'number',min: 1, max: 65535, message: '1-65535', trigger: ['blur', 'change'] },
                 ],
                 PrivatePort: [
-                    { required: true, message: '请输入内网端口', trigger: 'blur' },
-                    { type: 'number',min: 1, max: 65535, message: '请输入数字1-65535', trigger: ['blur', 'change'] }
+                    { required: true, message: t('common.required'), trigger: 'blur' },
+                    { type: 'number',min: 1, max: 65535, message: '1-65535', trigger: ['blur', 'change'] }
                 ],
                 LeaseDuration: [
-                    { required: true, message: '请输入存活时间', trigger: 'blur' },
-                    { type: 'number',min: 0, max: 2147483647, message: '请输入数字0-2147483647', trigger: ['blur', 'change'] }
+                    { required: true, message: t('common.required'), trigger: 'blur' },
+                    { type: 'number',min: 0, max: 2147483647, message: '0-2147483647', trigger: ['blur', 'change'] }
                 ]
             },
             net:{}
@@ -103,15 +105,15 @@ export default {
                 delUpnpMappingInfo(props.machineId,deletePort,deleteProtocolType).then(() => {
                     addUpnpMappingInfo(props.machineId,json).then(() => {
                         state.show = false;
-                        ElMessage.success('已操作！');
+                        ElMessage.success(t('common.opered'));
                         emit('change')
                     }).catch((err) => {
                         console.log(err);
-                        ElMessage.error('操作失败！');
+                        ElMessage.error(t('common.operFail'));
                     });
                 }).catch((err) => {
                     console.log(err);
-                    ElMessage.error('操作失败！');
+                    ElMessage.error(t('common.operFail'));
                 });
             });
         }

@@ -1,11 +1,11 @@
 <template>
-     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" :title="`设置[${state.machineName}]UPNP`" width="98%" top="2vh">
+     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" :title="$t('network.upnp.title',[state.machineName])" width="98%" top="2vh">
         <div>
             <el-tabs type="border-card">
-                <el-tab-pane label="我加的">
+                <el-tab-pane :label="$t('network.upnp.myadd')">
                     <TunnelUpnpLocal :deviceTypes="state.deviceTypes" :protocolTypes="state.protocolTypes" :machineId="state.machineId"></TunnelUpnpLocal>
                 </el-tab-pane>
-                <el-tab-pane label="网关里的">
+                <el-tab-pane :label="$t('network.upnp.online')">
                     <TunnelUpnpRemote :deviceTypes="state.deviceTypes" :protocolTypes="state.protocolTypes" :machineId="state.machineId"></TunnelUpnpRemote>
                 </el-tab-pane>
             </el-tabs>

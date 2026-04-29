@@ -1,12 +1,12 @@
 <template>
-    <el-dialog v-model="state.show" append-to=".app-wrap" :title="`与[${state.device.MachineName}]的链接`" top="1vh" width="350">
+    <el-dialog v-model="state.show" append-to=".app-wrap" :title="$t('network.tunnel.title',[state.device.MachineName])" top="1vh" width="350">
         <div>
             <el-descriptions border size="small" :column="1" label-width="6rem" >
-                <el-descriptions-item label="目标" >
+                <el-descriptions-item :label="$t('network.tunnel.target')" >
                     <div class="break-all">{{ state.connection.IPEndPoint }}</div>
                 </el-descriptions-item>
-                <el-descriptions-item label="事务" >{{ state.transactions[state.connection.TransactionId] }}</el-descriptions-item>
-                <el-descriptions-item label="协议" >
+                <el-descriptions-item :label="$t('network.tunnel.trans')" >{{ state.transactions[state.connection.TransactionId] }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('network.tunnel.proto')">
                     <div v-if="state.connection.Connected">
                         <p>{{ state.connection.TransportName }}({{ state.protocolTypes[state.connection.ProtocolType] }}) - {{ state.types[state.connection.Type] }}</p>
                         <p>{{ state.connection.SendBufferRemainingText }} - {{ state.connection.RecvBufferRemainingText }}</p>
@@ -14,43 +14,45 @@
                 </el-descriptions-item>
                 <el-descriptions-item label="SSL" >{{ state.connection.SSL }}</el-descriptions-item>
                 
-                <el-descriptions-item label="上传" >
+                <el-descriptions-item :label="$t('network.tunnel.up')">
                     <div>
                         <p><span>{{ state.connection.SendBytesText }}</span></p>
                     </div>
                 </el-descriptions-item>
-                 <el-descriptions-item label="下载" >
+                 <el-descriptions-item :label="$t('network.tunnel.down')">
                     <div>
                         <p><span>{{ state.connection.ReceiveBytesText }}</span></p>
                     </div>
                 </el-descriptions-item>
                 
-                <el-descriptions-item label="中继" >
+                <el-descriptions-item :label="$t('network.tunnel.relay')">
                     <div>
                         <a v-if="state.operating.relay" href="javascript:;" class="a-line">
-                            <span>手动操作中</span><el-icon size="14" class="loading"><Loading /></el-icon>
+                            <span>{{$t('network.tunnel.manual')}}</span><el-icon size="14" class="loading"><Loading /></el-icon>
                         </a>
-                        <a v-else href="javascript:;" class="a-line" @click="handleNode">{{ state.nodesDic[state.connection.NodeId] || '选择节点' }}</a>
+                        <a v-else href="javascript:;" class="a-line" @click="handleNode">{{ state.nodesDic[state.connection.NodeId] || $t('network.tunnel.relay') }}</a>
                     </div>
                 </el-descriptions-item>
-                <el-descriptions-item label="打洞" >
+                <el-descriptions-item :label="$t('network.tunnel.p2p')">
                     <div>
                         <a v-if="state.operating.hand" href="javascript:;" class="a-line">
-                            <span>手动操作中</span><el-icon size="14" class="loading"><Loading /></el-icon>
+                            <span>{{$t('network.tunnel.manual')}}</span><el-icon size="14" class="loading"><Loading /></el-icon>
                         </a>
                         <template v-else>
-                            <a href="javascript:;" class="a-line" @click="handlep2p">尝试打洞</a>
-                            <span class="mgl-1">自动中<el-icon v-if="state.operating.default" size="14" class="loading"><Loading /></el-icon></span>
-                            <span class="mgl-1">后台中<el-icon v-if="state.operating.back" size="14" class="loading"><Loading /></el-icon></span>
+                            <a href="javascript:;" class="a-line" @click="handlep2p">{{$t('network.tunnel.p2p')}}</a>
+                            <span class="mgl-1">{{$t('network.tunnel.auto')}}<el-icon v-if="state.operating.default" size="14" class="loading"><Loading /></el-icon></span>
+                            <span class="mgl-1">{{$t('network.tunnel.back')}}<el-icon v-if="state.operating.back" size="14" class="loading"><Loading /></el-icon></span>
                         </template>
                     </div>
                 </el-descriptions-item>
-                <el-descriptions-item label="延迟" >{{ state.connection.Delay }}</el-descriptions-item>
-                 <el-descriptions-item label="操作" >
+                <el-descriptions-item :label="$t('network.tunnel.delay')" >{{ state.connection.Delay }}</el-descriptions-item>
+                 <el-descriptions-item :label="$t('common.oper')" >
                     <div>
                         <AccessShow value="TunnelRemove">
-                            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消"
-                                title="确定关闭此连接?" @confirm="handleDel">
+                            <el-popconfirm 
+                            :confirm-button-text="$t('common.confirm')" 
+                            :cancel-button-text="$t('common.cancel')"
+                            :title="$t('common.closeSure')" @confirm="handleDel">
                                 <template #reference>
                                     <el-button type="danger" size="small"><el-icon>
                                             <Delete />
@@ -101,7 +103,7 @@
                         <span>{{ scope.row.Delay }}ms</span>
                     </template>
                 </el-table-column>
-                <el-table-column property="Public" :label="$t('server.relayPublic')" width="50">
+                <el-table-column property="Public" :label="$t('server.relayPublic')" width="55">
                     <template #default="scope">
                         <el-switch disabled v-model="scope.row.Public" size="small" />
                     </template>
@@ -140,8 +142,8 @@ export default {
         const state = reactive({
             show: true,
             protocolTypes: { 1: 'tcp', 2: 'udp', 4: 'msquic' },
-            types: { 0: '打洞', 1: '中继', 2: '节点' },
-            transactions: { 'forward': '端口转发', 'tuntap': '虚拟网卡', 'socks5': '代理转发' },
+            types: { 0: t('network.tunnel.p2p'), 1: t('network.tunnel.relay'), 2: t('network.tunnel.node') },
+            transactions: { 'forward': t('forward'), 'tuntap': t('tuntap'), 'socks5': t('socks5') },
             device: connections.value.device,
             transactionId: connections.value.transactionId,
             operating:computed(()=>connections.value.device.hook_operating?connections.value.device.hook_operating[connections.value.transactionId]:{}),
@@ -162,7 +164,7 @@ export default {
         });
         const handleDel = () => {
             removeTunnelConnection(state.device.MachineId,state.transactionId).then(() => {
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
             }).catch(() => { });
         }
 
@@ -186,7 +188,7 @@ export default {
                 TransactionId:state.transactionId,
                 DenyProtocols:state.transactionId == 'tuntap' ? 4 : 2
             }).then(()=>{
-                ElMessage.success(t('common.oper'));
+                ElMessage.success(t('common.opered'));
             }).catch(()=>{ElMessage.success(t('common.operFail'));})
         }
 
@@ -201,7 +203,7 @@ export default {
                 NodeId: row.NodeId,
                 Protocol: protocol
             };
-            relayConnect(json).then(() => {ElMessage.success(t('common.oper')); }).catch(() => {ElMessage.success(t('common.operFail')); });
+            relayConnect(json).then(() => {ElMessage.success(t('common.opered')); }).catch(() => {ElMessage.success(t('common.operFail')); });
             state.showNodes = false;
         }
 

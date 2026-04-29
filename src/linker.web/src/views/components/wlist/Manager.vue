@@ -35,12 +35,12 @@
             <el-table-column prop="UseTime" :label="`${$t('server.wlistUseTime')}`" width="140"></el-table-column>
             <el-table-column prop="EndTime" :label="`${$t('server.wlistEndTime')}`" width="140"></el-table-column>
             <el-table-column prop="AddTime" :label="`${$t('server.wlistAddTime')}`" width="140"></el-table-column>
-            <el-table-column fixed="right" prop="Oper" :label="$t('server.wlistOper')" width="110">
+            <el-table-column fixed="right" prop="Oper" :label="$t('common.oper')" width="110">
                 <template #default="scope">
                     <el-button size="small" @click="handleEdit(scope.row)">
                         <el-icon><EditPen /></el-icon>
                     </el-button>
-                    <el-popconfirm :title="$t('server.wlistDelConfirm')" @confirm="handleDel(scope.row)">
+                    <el-popconfirm :title="$t('common.delSore',[''])" @confirm="handleDel(scope.row)">
                         <template #reference>
                             <el-button type="danger" size="small">
                                 <el-icon><Delete /></el-icon>

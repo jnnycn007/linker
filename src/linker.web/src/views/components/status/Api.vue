@@ -1,13 +1,13 @@
 <template>
     <div v-if="config" class="status-api-wrap" :class="{connected:connected}">
         <el-popconfirm 
-        :confirm-button-text="$t('status.apiClear')" 
-        :cancel-button-text="$t('status.apiAlter')" 
-        :title="$t('status.apiAlterConfirm')" @cancel="handleShow" @confirm="handleResetConnect" >
+        :confirm-button-text="$t('api.clear')" 
+        :cancel-button-text="$t('api.alter')" 
+        :title="$t('common.confirmSure')" @cancel="handleShow" @confirm="handleResetConnect" >
             <template #reference>
                 <a href="javascript:;">
                     <el-icon size="16"><Flag /></el-icon>
-                    <span>{{$t('status.api')}}</span>
+                    <span>{{$t('api')}}</span>
                 </a>
             </template>
         </el-popconfirm>

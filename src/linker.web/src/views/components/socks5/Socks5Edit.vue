@@ -1,11 +1,11 @@
 <template>
-     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" :title="`设置[${state.machineName}]代理`" top="1vh" width="780">
+     <el-dialog v-model="state.show" :close-on-click-modal="false" append-to=".app-wrap" :title="$t('socks5.title',[state.machineName])" top="1vh" width="780">
         <div>
             <el-form ref="ruleFormRef" :model="state.ruleForm" :rules="state.rules" label-width="140">
                 <el-form-item prop="gateway" class="mb-0">
-                    配置代理，通过代理访问其它设备
+                    {{$t('socks5.alert')}}
                 </el-form-item>
-                <el-form-item label="代理端口" prop="Port">
+                <el-form-item :label="$t('socks5.port')" prop="Port">
                     <el-input v-trim v-model="state.ruleForm.Port"  class="w-14" />
                 </el-form-item>
                 <div class="upgrade-wrap">
@@ -13,8 +13,8 @@
                 </div>
                 <el-form-item label="" prop="Btns" label-width="0">
                     <div class="t-c w-100">
-                        <el-button @click="state.show = false">取消</el-button>
-                        <el-button type="primary" @click="handleSave">确认</el-button>
+                        <el-button @click="state.show = false">{{$t('common.cancel')}}</el-button>
+                        <el-button type="primary" @click="handleSave">{{$t('common.confirm')}}</el-button>
                     </div>
                 </el-form-item>
             </el-form>
@@ -28,12 +28,14 @@ import { ElMessage } from 'element-plus';
 import { reactive, ref, watch } from 'vue';
 import { useSocks5 } from './socks5';
 import Socks5Lan from './Socks5Lan.vue';
+import { useI18n } from 'vue-i18n';
 export default {
     props: ['modelValue'],
     emits: ['change','update:modelValue'],
     components: {Socks5Lan},
     setup(props, { emit }) {
 
+        const {t} = useI18n ();
         const globalData = injectGlobalData();
         const socks5 = useSocks5();
         const ruleFormRef = ref(null);
@@ -65,11 +67,11 @@ export default {
             json.Lans = socks5Dom.value.getData();
             updateSocks5(json).then(() => {
                 state.show = false;
-                ElMessage.success('已操作！');
+                ElMessage.success(t('common.opered'));
                 emit('change')
             }).catch((err) => {
                 console.log(err);
-                ElMessage.error('操作失败！');
+                ElMessage.error(t('common.operFail'));
             });
         }
 

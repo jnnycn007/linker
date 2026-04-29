@@ -1,7 +1,7 @@
 <template>
     <AccessBoolean value="TunnelChangeSelf,TunnelChangeOther">
         <template #default="{values}">
-            <el-table-column prop="tunnel" :label="$t('home.tunnel')" width="94">
+            <el-table-column prop="tunnel" :label="$t('network')" width="94">
                 <template #default="scope">
                     <template v-if="scope.row && scope.row.hook_tunnel">
                         <div class="skeleton-animation" :style="`animation-delay:${scope.row.animationDelay}ms`">
@@ -31,11 +31,11 @@
                             </div> 
                             <div class="flex">
                                 <template v-if="scope.row.hook_counter">
-                                    <a href="javascript:;" class="a-line" :title="`UPNP、都打勾了就能用
-1、公网IP : ${scope.row.hook_counter['upnp-w']}  ${scope.row.hook_counter['upnp-w']>0?'✅':'❌'}
-2、设备数 : ${scope.row.hook_counter['upnp-d']} ${scope.row.hook_counter['upnp-d']>0?'✅':'❌'}
-3、本地映射数 : ${scope.row.hook_counter['upnp-l']} ${scope.row.hook_counter['upnp-l']>0?'✅':'❌'}
-4、在线映射数 : ${scope.row.hook_counter['upnp-r']} ${scope.row.hook_counter['upnp-r']>0?'✅':'❌'}`"
+                                    <a href="javascript:;" class="a-line" :title="`${$t('network.upnp.remark')}
+1、${$t('network.upnp.ip')} : ${scope.row.hook_counter['upnp-w']}  ${scope.row.hook_counter['upnp-w']>0?'✅':'❌'}
+2、${$t('network.upnp.device')} : ${scope.row.hook_counter['upnp-d']} ${scope.row.hook_counter['upnp-d']>0?'✅':'❌'}
+3、${$t('network.upnp.local')} : ${scope.row.hook_counter['upnp-l']} ${scope.row.hook_counter['upnp-l']>0?'✅':'❌'}
+4、${$t('network.upnp.remote')} : ${scope.row.hook_counter['upnp-r']} ${scope.row.hook_counter['upnp-r']>0?'✅':'❌'}`"
                                     @click="handleUpnp(scope.row.hook_tunnel,scope.row,values)"
                                     :class="scope.row.hook_counter['upnp-w'] > 0 && scope.row.hook_counter['upnp-d'] > 0
                                         ? 'green' : (scope.row.hook_counter['upnp-w']> 0 || scope.row.hook_counter['upnp-d'] > 0
@@ -50,8 +50,7 @@
                                 
                                 <span class="flex-1"></span>
                                 <a href="javascript:;" class="a-line" 
-                                    :class="{yellow:scope.row.hook_tunnel.NeedReboot}" 
-                                    :title="$t('home.holeText')"
+                                    :class="{yellow:scope.row.hook_tunnel.NeedReboot}"
                                     @click="handleTunnel(scope.row.hook_tunnel,scope.row,values)">
                                     {{scope.row.hook_tunnel.RouteLevel}}+{{scope.row.hook_tunnel.RouteLevelPlus}}
                                 </a>

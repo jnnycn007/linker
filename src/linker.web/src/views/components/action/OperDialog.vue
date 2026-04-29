@@ -1,6 +1,6 @@
 <template>
     <el-dialog v-model="state.show" append-to=".app-wrap" 
-    :title="`[${state.machineName}]上的验证参数`" top="1vh" width="98%" style="height:80vh" class="action-dialog">
+    :title="$t('action.title',[state.machineName])" top="1vh" width="98%" style="height:80vh" class="action-dialog">
         <div class="h-100">
             <Action :machineId="state.machineId"></Action>
         </div>

@@ -1,24 +1,24 @@
 <template>
     <PlanList ref="planDom" :machineid="machineId" category="sforward" :handles="state.handles">
-        <el-dialog v-model="state.show" @open="handleOnShowList" append-to=".app-wrap" :title="`【${machineName}】的内网穿透`" top="2vh" width="98%">
+        <el-dialog v-model="state.show" @open="handleOnShowList" append-to=".app-wrap" :title="$t('sforward.title',[machineName])" top="2vh" width="98%">
             <div>
                 <div class="t-c head">
-                    <el-button type="success" size="small" @click="handleAdd" :loading="state.loading">添加</el-button>
-                    <el-button size="small" @click="handleRefresh">刷新</el-button>
+                    <el-button type="success" size="small" @click="handleAdd" :loading="state.loading">{{$t('common.add')}}</el-button>
+                    <el-button size="small" @click="handleRefresh">{{$t('common.refresh')}}</el-button>
                 </div>
                 <el-table :data="state.data" size="small" border height="500" @cell-dblclick="handleCellClick">
-                    <el-table-column property="Name" label="名称" width="120">
+                    <el-table-column property="Name" :label="$t('sforward.name')" width="120">
                         <template #default="scope">
                             <template v-if="scope.row.NameEditing && scope.row.Started==false ">
                                 <el-input v-trim autofocus size="small" v-model="scope.row.Name"
                                     @blur="handleEditBlur(scope.row, 'Name')"></el-input>
                             </template>
                             <template v-else>
-                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'Name')">{{ scope.row.Name || '未知' }}</a>
+                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'Name')">{{ scope.row.Name || $t('common.unknow') }}</a>
                             </template>
                         </template>
                     </el-table-column>
-                    <el-table-column property="NodeId" label="节点" width="80">
+                    <el-table-column property="NodeId" :label="$t('sforward.nodes')" width="80">
                         <template #default="scope">
                             <template v-if="scope.row.NodeIdEditing && scope.row.Started==false ">
                                 <el-select v-model="scope.row.NodeId" size="small" @change="handleEditBlur(scope.row, 'NodeId')">
@@ -26,11 +26,11 @@
                                 </el-select>
                             </template>
                             <template v-else>
-                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'NodeId')">{{ state.nodesNames[scope.row.NodeId] || '未知' }}</a>
+                                <a href="javascript:;" class="a-line" @click="handleEdit(scope.row, 'NodeId')">{{ state.nodesNames[scope.row.NodeId] || $t('common.unknow') }}</a>
                             </template>
                         </template>
                     </el-table-column>
-                    <el-table-column property="Temp" label="服务器端口/域名" width="130">
+                    <el-table-column property="Temp" :label="$t('sforward.portordomain')" width="130">
                         <template #default="scope">
                             <template v-if="scope.row.TempEditing && scope.row.Started==false">
                                 <el-input v-trim autofocus size="small" v-model="scope.row.Temp"
@@ -60,7 +60,7 @@
                             </template>
                         </template>
                     </el-table-column>
-                    <el-table-column property="LocalEP" label="本机服务" width="100">
+                    <el-table-column property="LocalEP" :label="$t('sforward.local')" width="100">
                         <template #default="scope">
                             <template v-if="scope.row.LocalEPEditing && scope.row.Started==false">
                                 <el-input v-trim autofocus size="small" v-model="scope.row.LocalEP"
@@ -81,14 +81,14 @@
                             </template>
                         </template>
                     </el-table-column>
-                    <el-table-column property="Started" label="状态" width="60">
+                    <el-table-column property="Started" :label="$t('sforward.status')" width="60">
                         <template #default="scope">
                             <el-switch disabled v-model="scope.row.Started" inline-prompt
-                                active-text="是" inactive-text="否" @click="handleStartChange(scope.row)" />
+                                :active-text="$t('sforward.yes')" :inactive-text="$t('sforward.no')" @click="handleStartChange(scope.row)" />
                         </template>
                     </el-table-column>
                     
-                    <el-table-column prop="Plan" label="开启和关闭计划" width="200">
+                    <el-table-column prop="Plan" :label="$t('sforward.plan')" width="200">
                         <template #default="scope">
                             <div class="plan">
                                 <p><el-icon><Select /></el-icon><PlanShow handle="start"  :keyid="scope.row.Id"></PlanShow></p>
@@ -96,9 +96,12 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="54" fixed="right">
+                    <el-table-column :label="$t('common.oper')" width="54" fixed="right">
                         <template #default="scope">
-                            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="删除不可逆，是否确认?"
+                            <el-popconfirm 
+                            :confirm-button-text="$t('common.confirm')" 
+                            :cancel-button-text="$t('common.cancel')" 
+                            :title="$t('common.delSure',[''])"
                                 @confirm="handleDel(scope.row.Id)">
                                 <template #reference>
                                     <el-button type="danger" size="small"><el-icon><Delete /></el-icon></el-button>
@@ -120,12 +123,14 @@ import { injectGlobalData } from '@/provide';
 import { useSforward } from './sforward';
 import PlanList from '../plan/PlanList.vue';
 import PlanShow from '../plan/PlanShow.vue';
+import { useI18n } from 'vue-i18n';
 export default {
     props: ['data','modelValue'],
     emits: ['update:modelValue'],
     components:{WarnTriangleFilled,Delete,Select,CloseBold,PlanList,PlanShow},
     setup(props, { emit }) {
 
+        const {t} = useI18n();
         const planDom = ref(null);
         const globalData = injectGlobalData();
         const sforward = useSforward();
@@ -142,8 +147,8 @@ export default {
             editing:false,
             loading:false,
             handles:[
-                {label:'开启',value:'start'},
-                {label:'关闭',value:'stop'},
+                {label:t('sforward.open'),value:'start'},
+                {label:t('sforward.close'),value:'stop'},
             ]
         });
         watch(() => state.show, (val) => {
@@ -191,7 +196,7 @@ export default {
         }
         const handleRefresh = () => {
             _getSForward();
-            ElMessage.success('已刷新')
+            ElMessage.success(t('connom.refresh'))
         }
         const handleAdd = () => {
             state.loading = true;
@@ -208,7 +213,7 @@ export default {
         }
         const handleEdit = (row, p) => {
             if(row.Started){
-                ElMessage.error('请先停止运行');
+                ElMessage.error(t('sforward.stop'));
                 return;
             }
             state.data.forEach(c => {
@@ -224,7 +229,7 @@ export default {
         }
         const handleEditBlur = (row, p) => {
             if(row.Started){
-                ElMessage.error('请先停止运行');
+                ElMessage.error(t('sforward.stop'));
                 return;
             }
             row[`${p}Editing`] = false;
@@ -271,7 +276,7 @@ export default {
             sforwardAddClient({machineid:sforward.value.machineid,data:row}).then((res) => {
                 state.loading = false;
                 if(res == false){
-                    ElMessage.error('操作失败，可能存在相同值');
+                    ElMessage.error(t('common.operFail'));
                 }
                 _getSForward();
             }).catch((err) => {

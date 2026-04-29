@@ -8,7 +8,7 @@
         <el-table :data="state.request.List" stripe border size="small" width="100%">
             <el-table-column prop="Str" :label="$t('server.denyStr')"></el-table-column>
             <el-table-column prop="Remark" :label="$t('server.denyRemark')"></el-table-column>
-            <el-table-column prop="Oper" :label="$t('server.denyOper')" width="60">
+            <el-table-column prop="Oper" :label="$t('common.oper')" width="60">
                 <template #default="scope">
                     <el-popconfirm :confirm-button-text="$t('common.confirm')" :cancel-button-text="$t('common.cancel')" :title="$t('server.denyDel')"
                         @confirm="handleDel(scope.row)">

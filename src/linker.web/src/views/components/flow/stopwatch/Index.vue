@@ -5,7 +5,7 @@
                 <el-tab-pane :label="flow.device.name">
                     <Stopwatch :machineId="flow.device.id"></Stopwatch>
                 </el-tab-pane>
-                <el-tab-pane :label="$t('server.messenger')">
+                <el-tab-pane :label="$t('messenger')">
                     <Stopwatch :machineId="''"></Stopwatch>
                 </el-tab-pane>
             </el-tabs>
