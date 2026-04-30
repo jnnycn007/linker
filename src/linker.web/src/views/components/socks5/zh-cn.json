@@ -8,5 +8,8 @@
     "socks5.p2n.dstIp":"真实IP",
     "socks5.p2n.dstPrefix":"掩码",
     "socks5.p2n.remark":"备注",
-    "socks5.p2n.disabled":"禁用"
+    "socks5.p2n.disabled":"禁用",
+    "socks5.show.clash":"IP存在冲突",
+    "socks5.show.disabled":"已禁用",
+    "socks5.show.normal":"正常"
 }

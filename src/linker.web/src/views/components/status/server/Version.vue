@@ -25,7 +25,7 @@
             </a>
         </template>
     </AccessBoolean>
-    <el-dialog class="options-center" title="更新" destroy-on-close v-model="state.show" width="42rem" top="2vh">
+    <el-dialog class="options-center" :title="$t('updater')" destroy-on-close v-model="state.show" width="42rem" top="2vh">
         <div class="updater-wrap t-c">
             <div class="t-l">
                 <ul>
@@ -38,7 +38,7 @@
                 </el-select>
             </div>
             <div class="mgt-2 t-c">
-                <el-button type="success" @click="handleConfirm" plain>确 定</el-button>
+                <el-button type="success" @click="handleConfirm" plain>{{$t('common.confirm')}}</el-button>
             </div>
         </div>
     </el-dialog>
@@ -91,18 +91,18 @@ export default {
         }
         const updateText = ()=>{
             if(!updaterServer.value.Version){
-                return t('status.serverNoUpdate');
+                return t('updater.no');
             }
             if(updaterServer.value.Status <= 2) {
                 return state.version != updaterServer.value.Version  
-                ? `${t('status.serverNotNew')}(${updaterServer.value.Version})` 
-                : `${t('status.serverNew')}`
+                ? `${t('updater.notnew')}(${updaterServer.value.Version})` 
+                : `${t('updater.new')}`
             }
             return {
-                3:t('status.serverDownloading'),
-                4:t('status.serverDownloaded'),
-                5:t('status.serverUnZipIng'),
-                6:t('status.serverUnZip'),
+                3:t('updater.downloading'),
+                4:t('updater.downloaded'),
+                5:t('updater.unziping'),
+                6:t('updater.unzip'),
             }[updaterServer.value.Status];
         }
         const updateColor = ()=>{
@@ -119,7 +119,7 @@ export default {
             }
             //已解压
             if(updaterServer.value.Status == 6){
-                ElMessageBox.confirm(t('status.serverCloseConfirm'), t('common.tips'), {
+                ElMessageBox.confirm(t('updater.close'), t('common.tips'), {
                     confirmButtonText: t('common.confirm'),
                     cancelButtonText:t('common.cancel'),
                     type: 'warning'

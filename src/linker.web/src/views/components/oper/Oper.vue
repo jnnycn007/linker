@@ -23,14 +23,14 @@
                                             <el-dropdown-menu>
                                                 <template v-if="scope.row.Connected">
                                                     <AccessShow value="Reboot">
-                                                        <el-dropdown-item @click="handleExit(scope.row)"><el-icon><SwitchButton /></el-icon>{{$t('home.reboot')}}</el-dropdown-item>
+                                                        <el-dropdown-item @click="handleExit(scope.row)"><el-icon><SwitchButton /></el-icon>{{$t('oper.reboot')}}</el-dropdown-item>
                                                     </AccessShow>
-                                                    <el-dropdown-item v-if="handleShowAccess(scope.row,values)" @click="handleAccess(scope.row)"><el-icon><Flag /></el-icon>{{$t('home.access')}}</el-dropdown-item>
+                                                    <el-dropdown-item v-if="handleShowAccess(scope.row,values)" @click="handleAccess(scope.row)"><el-icon><Flag /></el-icon>{{$t('oper.access')}}</el-dropdown-item>
                                                     <AccessShow value="ApiPassword">
-                                                        <el-dropdown-item v-if="scope.row.isSelf" @click="handleApiPassword(scope.row)"><el-icon><HelpFilled /></el-icon>{{$t('home.managerApi')}}</el-dropdown-item>
+                                                        <el-dropdown-item v-if="scope.row.isSelf" @click="handleApiPassword(scope.row)"><el-icon><HelpFilled /></el-icon>{{$t('oper.manageApi')}}</el-dropdown-item>
                                                     </AccessShow>
                                                     <AccessShow value="ApiPasswordOther">
-                                                        <el-dropdown-item v-if="scope.row.isSelf==false" @click="handleApiPassword(scope.row)"><el-icon><HelpFilled /></el-icon> {{$t('home.managerApi')}}</el-dropdown-item>
+                                                        <el-dropdown-item v-if="scope.row.isSelf==false" @click="handleApiPassword(scope.row)"><el-icon><HelpFilled /></el-icon> {{$t('oper.manageApi')}}</el-dropdown-item>
                                                     </AccessShow>
                                                     <ActionOper :item="scope.row"></ActionOper>
                                                     <FlowOper :item="scope.row"></FlowOper>
@@ -124,7 +124,7 @@ export default {
         }
 
         const handleApiPassword = (row)=>{
-            ElMessageBox.prompt(t('home.newPassword'), t('home.setPassword',[row.MachineName]), {
+            ElMessageBox.prompt(t('oper.passwd.new'), t('oper.passwd.set',[row.MachineName]), {
                 confirmButtonText:  t('common.confirm'),
                 cancelButtonText: t('common.cancel'),
                 inputPattern:/^[0-9a-zA-Z]{1,32}$/,

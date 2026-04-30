@@ -2,30 +2,30 @@
     <el-dialog :title="state.time" destroy-on-close v-model="flow.count" width="640">
         <div>
             <el-table :data="state.list" border size="small" width="100%">
-                <el-table-column prop="text" :label="$t('status.flowType')"></el-table-column>
-                <el-table-column prop="sendtBytes" :label="$t('status.flowUpload')" sortable>
+                <el-table-column prop="text" :label="$t('flow.type')"></el-table-column>
+                <el-table-column prop="sendtBytes" :label="$t('flow.upload')" sortable>
                     <template #default="scope">
                         <span>{{ scope.row.sendtBytesText }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="sendtSpeed" :label="$t('status.flowUpload')" sortable>
+                <el-table-column prop="sendtSpeed" :label="$t('flow.upload')" sortable>
                     <template #default="scope">
                         <span>{{ scope.row.sendtSpeedText }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="receiveBytes" :label="$t('status.flowDownload')" sortable>
+                <el-table-column prop="receiveBytes" :label="$t('flow.download')" sortable>
                     <template #default="scope">
                         <span>{{ scope.row.receiveBytesText }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="receiveSpeed" :label="$t('status.flowDownload')" sortable>
+                <el-table-column prop="receiveSpeed" :label="$t('flow.download')" sortable>
                     <template #default="scope">
                         <span>{{ scope.row.receiveSpeedText }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="oper" :label="$t('common.oper')" width="70">
                     <template #default="scope">
-                        <el-button v-if="scope.row.detail" size="small" @click="handleShowDetail(scope.row.id)">{{$t('status.flowDetail')}}</el-button>
+                        <el-button v-if="scope.row.detail" size="small" @click="handleShowDetail(scope.row.id)">{{$t('flow.detail')}}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -89,15 +89,15 @@ export default {
             state.details[id] = true;
         }
         const id2text = {
-            'External':{text:t('status.flowWanPort'),detail:false,format:true,suffix:'/s'},
-            'RelayReport':{text:t('status.flowRelayNode'),detail:false,format:true,suffix:'/s'},
-            'Relay':{text:t('status.flowRelay'),detail:hasRelayFlow.value,format:true,suffix:'/s'},
-            'Messenger':{text:t('status.flowMessenger'),detail:hasSigninFlow.value,format:true,suffix:'/s'},
-            'SForward':{text:t('status.flowServerForward'),detail:hasSForwardFlow.value,format:true,suffix:'/s'},
+            'External':{text:t('flow.port'),detail:false,format:true,suffix:'/s'},
+            'RelayReport':{text:t('flow.relay.node'),detail:false,format:true,suffix:'/s'},
+            'Relay':{text:t('flow.relay'),detail:hasRelayFlow.value,format:true,suffix:'/s'},
+            'Messenger':{text:t('flow.messenger'),detail:hasSigninFlow.value,format:true,suffix:'/s'},
+            'SForward':{text:t('flow.sforward'),detail:hasSForwardFlow.value,format:true,suffix:'/s'},
             'flow':{text:'',detail:false},
-            'Forward':{text:t('status.flowForward'),detail:hasForwardFlow.value,format:true,suffix:'/s'},
-            'Socks5':{text:t('status.flowSocks5'),detail:hasSocks5Flow.value,format:true,suffix:'/s'},
-            'Tunnel':{text:t('status.flowTunnel'),detail:hasTunnelFlow.value},
+            'Forward':{text:t('flow.forward'),detail:hasForwardFlow.value,format:true,suffix:'/s'},
+            'Socks5':{text:t('flow.socks5'),detail:hasSocks5Flow.value,format:true,suffix:'/s'},
+            'Tunnel':{text:t('flow.tunnel'),detail:hasTunnelFlow.value},
         };
         const _getFlows = ()=>{
             clearTimeout(state.timer);

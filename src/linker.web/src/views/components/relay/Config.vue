@@ -1,8 +1,8 @@
 <template>
-    <el-form-item :label="$t('server.relay')">
+    <el-form-item :label="$t('relay')">
         <div class="flex">
             <a href="javascript:;" @click="state.showModes=true" class="mgr-1 delay a-line" :class="{red:state.nodes.length==0,green:state.nodes.length>0}">
-                {{$t('server.relayNodes')}} : {{state.nodes.length}}
+                {{$t('relay.nodes')}} : {{state.nodes.length}}
             </a>
             <WhiteList type="Relay"></WhiteList>
             <Nodes v-if="state.showModes" v-model="state.showModes" :data="state.nodes"></Nodes>

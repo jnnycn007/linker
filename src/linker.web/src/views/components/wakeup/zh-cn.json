@@ -25,5 +25,6 @@
     "wakeup.runSwitchConfirm": "确认触发开关到",
     "wakeup.runSwitchLong": "长按",
     "wakeup.runSwitchTouch": "轻触",
-    "wakeup.runSwitchCustom": "自定义ms"
+    "wakeup.runSwitchCustom": "自定义ms",
+    "wakeup.title": "{0}的唤醒"
 }

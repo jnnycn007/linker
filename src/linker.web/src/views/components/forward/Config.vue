@@ -1,5 +1,5 @@
 <template>
-    <el-form-item :label="$t('server.sforward')">
+    <el-form-item :label="$t('sforward')">
         <div class="flex">
             <a href="javascript:;" @click="state.showModes = true" class="mgr-1 delay a-line" :class="{red:state.nodes.length==0,green:state.nodes.length>0}">
                 {{$t('sforward.nodes')}} : {{state.nodes.length}}

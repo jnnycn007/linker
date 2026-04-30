@@ -70,13 +70,19 @@ namespace linker.messenger.sforward.client
             {
                 var tasks = Nodes.Select(async (c) =>
                 {
-                    IPEndPoint ep = await NetworkHelper.GetEndPointAsync(c.Host,1802);
+                    try
+                    {
+                        IPEndPoint ep = await NetworkHelper.GetEndPointAsync(c.Host, 1802);
 
-                    ep.Address = ep.Address == null || ep.Address.Equals(IPAddress.Any) ? signInClientState.Connection.Address.Address : ep.Address;
+                        ep.Address = ep.Address == null || ep.Address.Equals(IPAddress.Any) ? signInClientState.Connection.Address.Address : ep.Address;
 
-                    using Ping ping = new Ping();
-                    var resp = await ping.SendPingAsync(ep.Address, 1000);
-                    c.Delay = resp.Status == IPStatus.Success ? (int)resp.RoundtripTime : -1;
+                        using Ping ping = new Ping();
+                        var resp = await ping.SendPingAsync(ep.Address, 1000);
+                        c.Delay = resp.Status == IPStatus.Success ? (int)resp.RoundtripTime : -1;
+                    }
+                    catch (Exception)
+                    {
+                    }
                 });
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }

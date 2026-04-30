@@ -24,5 +24,6 @@
     "wakeup.runSwitchConfirm": "Are you sure send switch packet to",
     "wakeup.runSwitchLong": "Long press",
     "wakeup.runSwitchTouch": "Touch",
-    "wakeup.runSwitchCustom": "Custom ms"
+    "wakeup.runSwitchCustom": "Custom ms",
+    "wakeup.title": "Wakeup of {0}"
 }

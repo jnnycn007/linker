@@ -387,17 +387,29 @@ namespace linker.nat
         }
         private static void Ping(IPAddress ip, IcmpState state)
         {
-            state.Times = 0;
-            using Ping ping = new Ping();
-            PingReply reply = ping.Send(ip, 1000);
-            state.Status = reply.Status;
+            try
+            {
+                state.Times = 0;
+                using Ping ping = new Ping();
+                PingReply reply = ping.Send(ip, 1000);
+                state.Status = reply.Status;
+            }
+            catch (Exception)
+            {
+            }
         }
         private static async Task PingAsync(IPAddress ip, IcmpState state)
         {
-            state.Times = 0;
-            using Ping ping = new Ping();
-            PingReply reply = await ping.SendPingAsync(ip, 1000);
-            state.Status = reply.Status;
+            try
+            {
+                state.Times = 0;
+                using Ping ping = new Ping();
+                PingReply reply = await ping.SendPingAsync(ip, 1000);
+                state.Status = reply.Status;
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void ClearTask()

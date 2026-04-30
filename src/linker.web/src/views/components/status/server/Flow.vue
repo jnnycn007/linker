@@ -1,13 +1,13 @@
 <template>
     <div class="flow-wrap" v-if="config">
-        <p>{{$t('status.flowOnline')}} 
-            <a href="javascript:;" @click="flow.map=true" :title="`${$t('status.flowThisServer')}\r\n${$t('status.flowOnline')}/${$t('status.flowOnline7Day')}`">{{flow.overallOnline}}</a>
-            <a href="javascript:;" @click="flow.allmap=true" :title="`${$t('status.flowAllServer')}\r\n${$t('status.flowOnline')}/${$t('status.flowOnline7Day')}/${$t('status.flowServer')}`">{{ flow.serverOnline }}</a>
+        <p>{{$t('flow.online')}} 
+            <a href="javascript:;" @click="flow.map=true" :title="`${$t('flow.thisServer')}\r\n${$t('flow.online')}/${$t('flow.online.7day')}`">{{flow.overallOnline}}</a>
+            <a href="javascript:;" @click="flow.allmap=true" :title="`${$t('flow.allServer')}\r\n${$t('flow.online')}/${$t('flow.online.7day')}/${$t('flow.server')}`">{{ flow.serverOnline }}</a>
         </p>
-        <p>{{$t('status.flowUpload')}} <a href="javascript:;"  @click="flow.count = true" :title="`${$t('status.flowThisServer')}\r\n${$t('status.flowAllSend')}`">{{flow.overallSendtSpeed}}</a></p>
-        <p>{{$t('status.flowDownload')}} <a href="javascript:;"  @click="flow.count = true" :title="`${$t('status.flowThisServer')}\r\n${$t('status.flowAllReceive')}`">{{flow.overallReceiveSpeed}}</a></p>
+        <p>{{$t('flow.upload')}} <a href="javascript:;"  @click="flow.count = true" :title="`${$t('flow.thisServer')}\r\n${$t('flow.allsend')}`">{{flow.overallSendtSpeed}}</a></p>
+        <p>{{$t('flow.download')}} <a href="javascript:;"  @click="flow.count = true" :title="`${$t('flow.thisServer')}\r\n${$t('flow.allrecv')}`">{{flow.overallReceiveSpeed}}</a></p>
     </div>
-    <Flow :config="config" title="服务器"></Flow>
+    <Flow :config="config" :title="$t('status.server')"></Flow>
 </template>
 
 <script>

@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :title="`${$t('status.messengerName')}`" class="options-center" top="1vh" destroy-on-close v-model="state.show" width="480">
+    <el-dialog :title="`${$t('flow.messenger')}`" class="options-center" top="1vh" destroy-on-close v-model="state.show" width="480">
         <div>
             <el-tabs type="border-card">
                 <el-tab-pane :label="flow.device.name">

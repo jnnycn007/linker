@@ -63,10 +63,17 @@ namespace linker.messenger.tuntap.client
 
             await Task.WhenAll(items.Select(async c =>
             {
-                using Ping ping = new Ping();
-                PingReply pingReply = await ping.SendPingAsync(c.IP, 500).ConfigureAwait(false);
-                c.Delay = pingReply.Status == IPStatus.Success ? (int)pingReply.RoundtripTime : -1;
-                tuntapDecenter.DataVersion.Increment();
+                try
+                {
+                    using Ping ping = new Ping();
+                    PingReply pingReply = await ping.SendPingAsync(c.IP, 500).ConfigureAwait(false);
+                    c.Delay = pingReply.Status == IPStatus.Success ? (int)pingReply.RoundtripTime : -1;
+                    tuntapDecenter.DataVersion.Increment();
+                }
+                catch (Exception)
+                {
+                }
+                    
             })).ConfigureAwait(false);
         }
 
